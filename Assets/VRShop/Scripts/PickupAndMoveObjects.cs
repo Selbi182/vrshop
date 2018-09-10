@@ -6,7 +6,6 @@ using UnityEngine;
 public class PickupAndMoveObjects : MonoBehaviour {
 
     // CONSTANTS
-    private const ushort MAX_PULSE = 3999;
     private const string PICKUP = "Pickup";
     private const Valve.VR.EVRButtonId TRIGGER_BUTTON = Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger;
     
@@ -20,6 +19,11 @@ public class PickupAndMoveObjects : MonoBehaviour {
     // Connected Objects
     private GameObject pickupObj;
     private FixedJoint fixedJoint;
+
+    public float throwVelocity = 1f;
+
+    [HideInInspector]
+    public Boolean isGrabbing = false;
 
     // Initialize 
     void Start() {
@@ -39,11 +43,14 @@ public class PickupAndMoveObjects : MonoBehaviour {
         if (Controller.GetPressDown(TRIGGER_BUTTON)) {
             if (pickupObj != null) {
                 fixedJoint.connectedBody = pickupObj.GetComponent<Rigidbody>();
+                isGrabbing = true;
             }
         } else if (Controller.GetPressUp(TRIGGER_BUTTON)) {
             if (fixedJoint.connectedBody != null) {
                 fixedJoint.connectedBody = null;
-                pickupObj.transform.GetComponent<Rigidbody>().velocity = Controller.velocity;
+                pickupObj.transform.GetComponent<Rigidbody>().velocity = Controller.velocity * throwVelocity;
+                pickupObj = null;
+                isGrabbing = false;
             }
         }
     }
@@ -51,24 +58,17 @@ public class PickupAndMoveObjects : MonoBehaviour {
     // Identify if we are in range of an object
     void OnTriggerStay(Collider other) {
         if (other.transform.parent.transform.Equals(pickupObjectsParent.transform)) {
+            if (pickupObj == null) {
+                SendMessage("HapticPulseDo", 1.0f);
+            }
             pickupObj = other.gameObject;
-            HapticPulseDo(0.5f);
         }
     }
 
     // Reset trigger
     void OnTriggerExit(Collider other) {
-        pickupObj = null;
-    }
-
-    // Utility method for haptic pulse for range float of 0.0..1.0
-    void HapticPulseDo(float factor) {
-        float inBounds = Mathf.Max(0f, Mathf.Min(1f, factor));
-
-        // Calculate power based on factor 0.0..1.0
-        ushort pulseForce = Convert.ToUInt16(Mathf.Min(MAX_PULSE * inBounds, MAX_PULSE) * 0.2f);
-
-        // Send calculated pulse force to controller for this frame
-        Controller.TriggerHapticPulse(pulseForce);
+        if (!isGrabbing) {
+            pickupObj = null;
+        }
     }
 }
