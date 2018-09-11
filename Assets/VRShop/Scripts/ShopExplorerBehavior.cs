@@ -12,6 +12,11 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public float distanceFromCenter;
     public GameObject prefabScreenContainer;
 
+    public GameObject shopItemSpawner;
+    public GameObject infoScreen;
+    private GameObject selectedScreen;
+    public float selectionSpeed;
+
     // Used for swiping
     private enum Direction {
         LEFT  = -1,
@@ -58,14 +63,36 @@ public class ShopExplorerBehavior : MonoBehaviour {
                 num = 0;
             }
 
-            screen.transform.position = pos;
-
-            // Update the rotation to keep looking at the player.
-            screen.transform.rotation = Quaternion.LookRotation(transform.parent.position - screen.transform.position);
-            Vector3 tmpAngles = screen.transform.localEulerAngles;
-            tmpAngles.x = 0;
-            screen.transform.localEulerAngles = tmpAngles;
+            // Skip it for a selected screen
+            if (screen != selectedScreen) {
+                screen.transform.position = pos;
+                OrientateScreen(screen);
+            }
         }
+
+        // Move the selected monitor towards its destination
+        if (selectedScreen != null) {
+            selectedScreen.transform.position = Vector3.Slerp(
+                selectedScreen.transform.position,
+                infoScreen.transform.position,
+                Time.deltaTime * selectionSpeed
+            );
+
+            selectedScreen.transform.rotation = Quaternion.Slerp(
+                selectedScreen.transform.rotation,
+                infoScreen.transform.rotation,
+                Time.deltaTime * selectionSpeed
+            );
+        }
+        //OrientateScreen(infoScreen);
+    }
+
+    public void SelectScreen(GameObject screen) {
+        if (selectedScreen != null) {
+            SetSpawnButtonActive(selectedScreen, false);
+        }
+        selectedScreen = screen;
+        SetSpawnButtonActive(selectedScreen, true);
     }
 
     public void UpdateOffset(float newOffset) {
@@ -85,5 +112,19 @@ public class ShopExplorerBehavior : MonoBehaviour {
         }
         offset = newOffset;
         swipeDirection = newSwipeDirection;
+    }
+
+    private void OrientateScreen(GameObject screen) {
+        // Update the rotation to keep looking at the player.
+        screen.transform.rotation = Quaternion.LookRotation(transform.parent.position - screen.transform.position);
+        Vector3 tmpAngles = screen.transform.localEulerAngles;
+        tmpAngles.x = 0;
+        screen.transform.localEulerAngles = tmpAngles;
+    }
+
+    private void SetSpawnButtonActive(GameObject screen, bool active) {
+        for (int i = 0; i < screen.transform.childCount; i++) {
+            screen.transform.GetChild(i).gameObject.SetActive(active);
+        }
     }
 }

@@ -10,8 +10,8 @@ public class LaserPointer : MonoBehaviour {
     public Material monitorActive;
     public Material monitorInactive;
 
+    public GameObject shopExplorer;
     private GameObject targetObject;
-    public GameObject shopItemSpawner;
 
     private readonly float laserLength = 50f;
     
@@ -35,13 +35,15 @@ public class LaserPointer : MonoBehaviour {
             ClearTarget();
         }
 
-        if (shopItemSpawner != null
-            && targetObject != null
+        if (targetObject != null
             && !isGrabbing
             && Controller.GetPressDown(SteamVR_Controller.ButtonMask.Trigger)) {
+            
+            // Send the information that a screen has been selected for preview
+            shopExplorer.SendMessage("SelectScreen", targetObject);
 
             // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
-            shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
+            //shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
             SendMessage("HapticPulseDoLerp", 1f/30f);
         }    
     }
