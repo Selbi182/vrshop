@@ -25,16 +25,23 @@ public class ShopExplorerBehavior : MonoBehaviour {
     };
     private Direction swipeDirection;
     public float offset = 0f;
-    private float actualOffset = 0f;
+    public float actualOffset = 0f;
 
+    // Used for transparency
+    private Color screenColor;
+    private readonly string TINT_COLOR = "_TintColor";
+    private readonly string SCREEN_SELECTABLE = "LaserTarget";
+    private readonly string SCREEN_NOTSELECTABLE = "Untagged";
 
     // Collection of instantiated screens
     private IList<GameObject> screens;
 
     void Start() {
         swipeDirection = Direction.STILL;
-        screens = new List<GameObject>();
+        screenColor = prefabScreenContainer.GetComponent<Renderer>().sharedMaterial.GetColor(TINT_COLOR);
+
         // Spawn the prefabs
+        screens = new List<GameObject>();
         for (int i = 1; i < screenCount + 1; i++) {
             GameObject newScreenObj = GameObject.Instantiate(prefabScreenContainer, transform);
             screens.Add(newScreenObj);
@@ -43,8 +50,21 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     void FixedUpdate() {
         // Make it smooth af
+        
         offset = Mathf.Lerp(offset, 0f, Time.deltaTime);
+        if (Mathf.Abs(offset) > 2f) {
+            offset = Mathf.Sign(offset) * 2f;
+        }
+
+        if (Mathf.Abs(offset) < 0.01f) {
+            offset = 0f;
+        }
+
         actualOffset += offset;
+        if (actualOffset > 0f) {
+            // Left boundary scrolling
+            actualOffset = 0f;
+        }
 
         // Iterate through all screens and update their position
         int num = 0;
@@ -63,10 +83,24 @@ public class ShopExplorerBehavior : MonoBehaviour {
                 num = 0;
             }
 
+            // Apply updates to unslected screens
             // Skip it for a selected screen
             if (screen != selectedScreen) {
                 screen.transform.position = pos;
                 OrientateScreen(screen);
+
+                // If the screen is behind the user, steadily increase the transparency
+                float sin = Mathf.Sin(radian);
+                if (sin < 0f) {
+                    screen.tag = SCREEN_NOTSELECTABLE;
+                    LaserPointer.ResetMonitorColor(screen);
+
+                    Color transparentScreenColor = screenColor;
+                    transparentScreenColor.a = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
+                    screen.transform.GetComponent<Renderer>().material.SetColor(TINT_COLOR, transparentScreenColor);
+                } else {
+                    screen.tag = SCREEN_SELECTABLE;
+                }
             }
         }
 

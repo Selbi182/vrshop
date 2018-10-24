@@ -7,11 +7,15 @@ public class LaserPointer : MonoBehaviour {
     public GameObject laserVisuals;
     public GameObject laserCollider;
 
-    public Material monitorActive;
-    public Material monitorInactive;
+    public static string TINT_COLOR = "_TintColor";
+    public static Color monitorActive   = new Color(0.376465f, 0.731f, 0.6063015f, 0.5921569f);
+    public static Color MONITOR_INACTIVE = new Color(0.376465f, 0.6063015f, 0.731f, 0.8921569f);
 
     public GameObject shopExplorer;
     private GameObject targetObject;
+    private GameObject targetObjectThisFrame = null;
+    private float closestTargetObjectThisFrameDistance = float.MaxValue;
+    
 
     private readonly float laserLength = 50f;
     
@@ -51,26 +55,41 @@ public class LaserPointer : MonoBehaviour {
     public void ClearTarget() {
         SetLaserColor(Color.red);
         SetLaserLength(laserLength);
-        SetMonitorMaterial(monitorInactive);
+        ResetMonitorColor(targetObject);
         targetObject = null;
     }
 
     public void SetTarget(GameObject target) {
-        // Block double set
-        if (target == targetObject) {
-            return;
+        // Find the closest collision this frame
+        float distance = Vector3.Distance(laserVisuals.transform.position, target.transform.position);
+        if (distance < closestTargetObjectThisFrameDistance) {
+            closestTargetObjectThisFrameDistance = distance;
+            targetObjectThisFrame = target;
         }
 
-        // To prevent race conditions
-        if (targetObject != null) {
-            ClearTarget();
-        }
-        targetObject = target;
+    }
 
-        SetLaserColor(Color.green);
-        SetLaserLength(Vector3.Distance(laserVisuals.transform.position, targetObject.transform.position));
-        SetMonitorMaterial(monitorActive);
-        SendMessage("HapticPulseDo", 0.5f);
+    private void LateUpdate() {
+        if (targetObjectThisFrame != null) {
+            // Block double set
+            if (targetObjectThisFrame == targetObject) {
+                return;
+            }
+
+            // To prevent race conditions
+            if (targetObject != null) {
+                ClearTarget();
+            }
+            targetObject = targetObjectThisFrame;
+
+            SetLaserColor(Color.green);
+            SetLaserLength(closestTargetObjectThisFrameDistance);
+            SetMonitorColor(targetObject, monitorActive);
+            SendMessage("HapticPulseDo", 0.5f);
+
+            closestTargetObjectThisFrameDistance = float.MaxValue;
+            targetObjectThisFrame = null;
+        }
     }
 
     private void SetLaserColor(Color color) {
@@ -86,9 +105,15 @@ public class LaserPointer : MonoBehaviour {
         }
     }
 
-    private void SetMonitorMaterial(Material material) {
-        if (targetObject != null) {
-            targetObject.GetComponent<MeshRenderer>().material = material;
+    private static void SetMonitorColor(GameObject monitor, Color color) {
+        if (monitor != null) {
+            monitor.transform.GetComponent<Renderer>().material.SetColor(LaserPointer.TINT_COLOR, color);
+        }
+    }
+
+    public static void ResetMonitorColor(GameObject monitor) {
+        if (monitor != null) {
+            monitor.transform.GetComponent<Renderer>().material.SetColor(LaserPointer.TINT_COLOR, LaserPointer.MONITOR_INACTIVE);
         }
     }
 }
