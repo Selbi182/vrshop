@@ -7,11 +7,9 @@ public class LaserPointer : MonoBehaviour {
     public GameObject laserVisuals;
     public GameObject laserCollider;
 
-    public static string TINT_COLOR = "_TintColor";
-    public static Color monitorActive   = new Color(0.376465f, 0.731f, 0.6063015f, 0.5921569f);
-    public static Color MONITOR_INACTIVE = new Color(0.376465f, 0.6063015f, 0.731f, 0.8921569f);
-
     public GameObject shopExplorer;
+    public GameObject leftScrollButton;
+    public GameObject rightScrollButton;
     private GameObject targetObject;
     private GameObject targetObjectThisFrame = null;
     private float closestTargetObjectThisFrameDistance = float.MaxValue;
@@ -39,23 +37,37 @@ public class LaserPointer : MonoBehaviour {
             ClearTarget();
         }
 
-        if (targetObject != null
-            && !isGrabbing
-            && Controller.GetPressDown(SteamVR_Controller.ButtonMask.Trigger)) {
-            
-            // Send the information that a screen has been selected for preview
-            shopExplorer.SendMessage("SelectScreen", targetObject);
+        // Events when pressing the trigger button without grabbing an object
+        if (Controller.GetPress(SteamVR_Controller.ButtonMask.Trigger) && !isGrabbing) {
+            // Differenet behavior for scroll buttons
+            if (targetObject == leftScrollButton) {
+                SendMessage("NotifyButtonScroll", -1);
+            } else if (targetObject == rightScrollButton) {
+                SendMessage("NotifyButtonScroll", 1);
+            } else if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Trigger)) {
+                if (targetObject != null) {
+                    // Send the information that a screen has been selected for preview
+                    shopExplorer.SendMessage("SelectScreen", targetObject);
 
-            // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
-            //shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
-            SendMessage("HapticPulseDoLerp", 1f/30f);
-        }    
+                    // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
+                    //shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
+                    SendMessage("HapticPulseDoLerp", 1f / 30f);
+                } else if (targetObject == null) {
+                    // When clicking into the void, reset selected target
+                    ClearTarget();
+                    shopExplorer.SendMessage("UnselectScreen");
+                    SendMessage("HapticPulseDo", 0.5f);
+                }
+            }
+        }
     }
 
     public void ClearTarget() {
         SetLaserColor(Color.red);
         SetLaserLength(laserLength);
-        ResetMonitorColor(targetObject);
+        if (targetObject != null) {
+            shopExplorer.SendMessage("SetMonitorInactive", targetObject);
+        }
         targetObject = null;
     }
 
@@ -66,14 +78,13 @@ public class LaserPointer : MonoBehaviour {
             closestTargetObjectThisFrameDistance = distance;
             targetObjectThisFrame = target;
         }
-
     }
 
     private void LateUpdate() {
         if (targetObjectThisFrame != null) {
-            // Block double set
-            if (targetObjectThisFrame == targetObject) {
-                return;
+            // Prevent haptic pulse spam
+            if (targetObjectThisFrame != targetObject) {
+                SendMessage("HapticPulseDo", 0.5f);
             }
 
             // To prevent race conditions
@@ -84,8 +95,7 @@ public class LaserPointer : MonoBehaviour {
 
             SetLaserColor(Color.green);
             SetLaserLength(closestTargetObjectThisFrameDistance);
-            SetMonitorColor(targetObject, monitorActive);
-            SendMessage("HapticPulseDo", 0.5f);
+            shopExplorer.SendMessage("SetMonitorActive",  targetObject);
 
             closestTargetObjectThisFrameDistance = float.MaxValue;
             targetObjectThisFrame = null;
@@ -105,17 +115,6 @@ public class LaserPointer : MonoBehaviour {
         }
     }
 
-    private static void SetMonitorColor(GameObject monitor, Color color) {
-        if (monitor != null) {
-            monitor.transform.GetComponent<Renderer>().material.SetColor(LaserPointer.TINT_COLOR, color);
-        }
-    }
-
-    public static void ResetMonitorColor(GameObject monitor) {
-        if (monitor != null) {
-            monitor.transform.GetComponent<Renderer>().material.SetColor(LaserPointer.TINT_COLOR, LaserPointer.MONITOR_INACTIVE);
-        }
-    }
 }
 
 
