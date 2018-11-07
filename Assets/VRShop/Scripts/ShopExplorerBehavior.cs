@@ -20,7 +20,10 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     public GameObject shopItemSpawner;
     public GameObject infoScreen;
-    private GameObject selectedScreen;
+    private GameObject expandedScreen;
+    private GameObject selectedScreenOriginal;
+    private GameObject selectedScreenOriginalCurrent;
+    private GameObject selectedScreenMoveBack;
     public float selectionSpeed;
 
     // Used for swiping
@@ -39,9 +42,8 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     // Used for transparency
     private Color screenColor;
-    private const string TINT_COLOR = "_TintColor";
-    public Color monitorActive = new Color(0.376465f, 0.731f, 0.6063015f, 0.5921569f);
-    public Color monitorInactive = new Color(0.376465f, 0.6063015f, 0.731f, 0.8921569f);
+    public Color monitorActive;
+    public Color monitorInactive;
     private const string SCREEN_SELECTABLE = "LaserTarget";
     private const string SCREEN_NOTSELECTABLE = "Untagged";
 
@@ -50,7 +52,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     void Start() {
         swipeDirection = Direction.STILL;
-        screenColor = prefabScreenContainer.GetComponent<Renderer>().sharedMaterial.GetColor(TINT_COLOR);
+        screenColor = prefabScreenContainer.GetComponent<ArticleMonitorWrapper>().GetMonitorColor();
 
         // Spawn the prefabs
         screens = new List<GameObject>();
@@ -97,9 +99,8 @@ public class ShopExplorerBehavior : MonoBehaviour {
         float y = initialYPos;
         int screensInColumnCount = 0;
 
-        int screenID = 0;
-        foreach (GameObject screen in screens) {
-            screenID++;
+        for (int i = 0; i < screens.Count; i++) {
+            GameObject screen = screens[i];
 
             // Update the screen's positon using simple trigenometry scaled over the frame counter.
             // As a result, the screen will circle around the player (specifically, the position of ShopExplorer).
@@ -118,7 +119,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
             // Apply updates to unslected screens
             // Skip it for a selected screen
-            if (screen != selectedScreen) {
+            if (screen != expandedScreen) {
                 screen.transform.position = pos;
                 OrientateScreen(screen);
 
@@ -132,7 +133,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
                     float newAlpha = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
                     if (newAlpha > 0f) {
                         transparentScreenColor.a = newAlpha;
-                        screen.transform.GetComponent<Renderer>().material.SetColor(TINT_COLOR, transparentScreenColor);
+                        SetMonitorColor(screen, transparentScreenColor);
                         screen.SetActive(true);
                     } else {
                         screen.SetActive(false);
@@ -158,24 +159,48 @@ public class ShopExplorerBehavior : MonoBehaviour {
         //}
 
         // Move the selected monitor towards its destination
-        if (selectedScreen != null) {
-            selectedScreen.transform.position = Vector3.Slerp(
-                selectedScreen.transform.position,
+        if (expandedScreen != null) {
+            expandedScreen.transform.position = Vector3.Slerp(
+                expandedScreen.transform.position,
                 infoScreen.transform.position,
                 Time.deltaTime * selectionSpeed
             );
 
-            selectedScreen.transform.localScale = Vector3.Slerp(
-                selectedScreen.transform.localScale,
+            expandedScreen.transform.localScale = Vector3.Slerp(
+                expandedScreen.transform.localScale,
                 infoScreen.transform.localScale,
                 Time.deltaTime * selectionSpeed
             );
 
-            selectedScreen.transform.rotation = Quaternion.Slerp(
-                selectedScreen.transform.rotation,
+            expandedScreen.transform.rotation = Quaternion.Slerp(
+                expandedScreen.transform.rotation,
                 infoScreen.transform.rotation,
                 Time.deltaTime * selectionSpeed
             );
+        }
+        
+        if (selectedScreenMoveBack != null && selectedScreenOriginal != null && expandedScreen != selectedScreenMoveBack) {
+            if (Vector3.Distance(selectedScreenMoveBack.transform.position, selectedScreenOriginal.transform.position) < 1f) {
+                FinishMovingBack();
+            } else {
+                selectedScreenMoveBack.transform.position = Vector3.Lerp(
+                    selectedScreenMoveBack.transform.localPosition,
+                    selectedScreenOriginal.transform.localPosition,
+                    Time.deltaTime * selectionSpeed * 2
+                );
+
+                selectedScreenMoveBack.transform.localScale = Vector3.Lerp(
+                    selectedScreenMoveBack.transform.localScale,
+                    selectedScreenOriginal.transform.localScale,
+                    Time.deltaTime * selectionSpeed * 2
+                );
+
+                selectedScreenMoveBack.transform.rotation = Quaternion.Lerp(
+                    selectedScreenMoveBack.transform.localRotation,
+                    selectedScreenOriginal.transform.localRotation,
+                    Time.deltaTime * selectionSpeed * 2
+                );
+            }
         }
     }
 
@@ -207,15 +232,16 @@ public class ShopExplorerBehavior : MonoBehaviour {
         screen.transform.localEulerAngles = tmpAngles;
     }
 
-    private void SetSpawnButtonActive(GameObject screen, bool active) {
-        for (int i = 0; i < screen.transform.childCount; i++) {
-            screen.transform.GetChild(i).gameObject.SetActive(active);
+    private void SetBacksideActive(GameObject screen, bool active) {
+        if (screen != null) {
+            screen.transform.GetComponent<ArticleMonitorWrapper>().SetBacksideActive(active);
         }
     }
 
     private void SetMonitorStatus(GameObject monitor, bool status) {
         if (monitor != null) {
-            monitor.transform.GetComponent<Renderer>().material.SetColor(TINT_COLOR, status ? monitorActive : monitorInactive);
+            // TODO fix für nicht artikelmonitore
+            //monitor.transform.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(status ? monitorActive : monitorInactive);
         }
     }
 
@@ -227,17 +253,45 @@ public class ShopExplorerBehavior : MonoBehaviour {
         SetMonitorStatus(monitor, false);
     }
 
-    public void SelectScreen(GameObject screen) {
-        UnselectScreen();
-        selectedScreen = screen;
-        SetSpawnButtonActive(selectedScreen, true);
+    public void UnselectScreen() {
+        if (expandedScreen != null) {
+            // If a screen was already marked for moving back, forget about it
+            FinishMovingBack();
+
+            // Mark previously selected monitor as ready for moving back
+            selectedScreenMoveBack = expandedScreen;
+            selectedScreenOriginal = selectedScreenOriginalCurrent;
+        }
+        expandedScreen = null;
     }
 
-    public void UnselectScreen() {
-        if (selectedScreen != null) {
-            SetSpawnButtonActive(selectedScreen, false);
-            selectedScreen.transform.localScale = prefabScreenContainer.transform.localScale;
+    public void SelectScreen(GameObject screen) {
+        // Disallow selection of new screen when one is already moving back
+        if (selectedScreenMoveBack != null) {
+            //return;
         }
-        selectedScreen = null;
+
+        // Mark the previously selected screen as unselected to make it move back
+        UnselectScreen();
+
+        // Create a clone of the screen with visible backside (pretend that it's the same gameobject as the selected one)
+        expandedScreen = GameObject.Instantiate(screen, transform);
+        expandedScreen.tag = SCREEN_NOTSELECTABLE;
+        SetBacksideActive(expandedScreen, true);
+        screen.SetActive(false);
+
+        // Remember which screen was selected
+        selectedScreenOriginalCurrent = screen;
+    }
+
+    private void SetMonitorColor(GameObject monitor, Color color) {
+        monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(color);
+    }
+
+    private void FinishMovingBack() {
+        if (selectedScreenMoveBack != null) {
+            Destroy(selectedScreenMoveBack);
+            selectedScreenOriginal.SetActive(true);
+        }
     }
 }
