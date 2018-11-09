@@ -17,7 +17,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public int firstColumn;
     public float distanceFromCenter;
     public GameObject prefabScreenContainer;
-
     public GameObject shopItemSpawner;
     public GameObject infoScreen;
     private GameObject expandedScreen;
@@ -33,7 +32,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
         RIGHT = +1
     };
     private Direction swipeDirection;
-    public float offset = 0f;
+    public float offsetChangeThisFrame = 0f;
     public float actualOffset = 0f;
     public float maximumOffset = 0f;
     public float maximumScrollSpeed = 2f;
@@ -46,6 +45,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public Color monitorInactive;
     private const string SCREEN_SELECTABLE = "LaserTarget";
     private const string SCREEN_NOTSELECTABLE = "Untagged";
+    private bool isArticleMonitor = false;
 
     // Collection of instantiated screens
     private IList<GameObject> screens;
@@ -65,21 +65,21 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     void FixedUpdate() {
         // Make the screen rotation smooth
-        offset = Mathf.Lerp(offset, 0f, Time.deltaTime);
-        if (Mathf.Abs(offset) > maximumScrollSpeed) {
-            offset = Mathf.Sign(offset) * maximumScrollSpeed;
+        offsetChangeThisFrame = Mathf.Lerp(offsetChangeThisFrame, 0f, Time.deltaTime);
+        if (Mathf.Abs(offsetChangeThisFrame) > maximumScrollSpeed) {
+            offsetChangeThisFrame = Mathf.Sign(offsetChangeThisFrame) * maximumScrollSpeed;
         }
 
         // Immediately stop the movement when the rotation speed falls below a certain level
-        if (Mathf.Abs(offset) < EPSILON) {
-            offset = 0f;
+        if (Mathf.Abs(offsetChangeThisFrame) < EPSILON) {
+            offsetChangeThisFrame = 0f;
         }
 
         // Calculate the maximum scroll offset based on the current number of articles
         maximumOffset = 180f * ((float)numberOfArticles / (float)screenCount);
 
         // Boundary scrolling
-        actualOffset += offset;
+        actualOffset += offsetChangeThisFrame;
         if (actualOffset < 0f) {
             actualOffset = 0f;
         } else if (actualOffset > maximumOffset) {
@@ -129,12 +129,10 @@ public class ShopExplorerBehavior : MonoBehaviour {
                     screen.tag = SCREEN_NOTSELECTABLE;
                     SetMonitorInactive(screen);
 
-                    Color transparentScreenColor = screenColor;
                     float newAlpha = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
                     if (newAlpha > 0f) {
-                        transparentScreenColor.a = newAlpha;
-                        SetMonitorColor(screen, transparentScreenColor);
                         screen.SetActive(true);
+                        SetMonitorTransparency(screen, newAlpha);
                     } else {
                         screen.SetActive(false);
                     }
@@ -166,11 +164,13 @@ public class ShopExplorerBehavior : MonoBehaviour {
                 Time.deltaTime * selectionSpeed
             );
 
-            expandedScreen.transform.localScale = Vector3.Slerp(
-                expandedScreen.transform.localScale,
-                infoScreen.transform.localScale,
-                Time.deltaTime * selectionSpeed
-            );
+            if (isArticleMonitor) {
+                expandedScreen.transform.localScale = Vector3.Slerp(
+                    expandedScreen.transform.localScale,
+                    infoScreen.transform.localScale,
+                    Time.deltaTime * selectionSpeed
+                );
+            }
 
             expandedScreen.transform.rotation = Quaternion.Slerp(
                 expandedScreen.transform.rotation,
@@ -179,8 +179,9 @@ public class ShopExplorerBehavior : MonoBehaviour {
             );
         }
         
+        // Handle the smooth transition for moving a deselected screen back to its position
         if (selectedScreenMoveBack != null && selectedScreenOriginal != null && expandedScreen != selectedScreenMoveBack) {
-            if (Vector3.Distance(selectedScreenMoveBack.transform.position, selectedScreenOriginal.transform.position) < 1f) {
+            if (offsetChangeThisFrame != 0f && Vector3.Distance(selectedScreenMoveBack.transform.position, selectedScreenOriginal.transform.position) < 1f) {
                 FinishMovingBack();
             } else {
                 selectedScreenMoveBack.transform.position = Vector3.Lerp(
@@ -217,10 +218,10 @@ public class ShopExplorerBehavior : MonoBehaviour {
         }
 
         if (newSwipeDirection == swipeDirection) {
-            offset += newOffset;
+            offsetChangeThisFrame += newOffset;
             return;
         }
-        offset = newOffset;
+        offsetChangeThisFrame = newOffset;
         swipeDirection = newSwipeDirection;
     }
 
@@ -233,7 +234,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
     }
 
     private void SetBacksideActive(GameObject screen, bool active) {
-        if (screen != null) {
+        if (screen != null && isArticleMonitor) {
             screen.transform.GetComponent<ArticleMonitorWrapper>().SetBacksideActive(active);
         }
     }
@@ -255,6 +256,10 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     public void UnselectScreen() {
         if (expandedScreen != null) {
+            if (!isArticleMonitor) {
+                expandedScreen.SetActive(false);
+            }
+
             // If a screen was already marked for moving back, forget about it
             FinishMovingBack();
 
@@ -275,6 +280,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
         UnselectScreen();
 
         // Create a clone of the screen with visible backside (pretend that it's the same gameobject as the selected one)
+        isArticleMonitor = screen.transform.parent.transform == transform;
         expandedScreen = GameObject.Instantiate(screen, transform);
         expandedScreen.tag = SCREEN_NOTSELECTABLE;
         SetBacksideActive(expandedScreen, true);
@@ -284,14 +290,23 @@ public class ShopExplorerBehavior : MonoBehaviour {
         selectedScreenOriginalCurrent = screen;
     }
 
-    private void SetMonitorColor(GameObject monitor, Color color) {
-        monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(color);
-    }
 
     private void FinishMovingBack() {
         if (selectedScreenMoveBack != null) {
             Destroy(selectedScreenMoveBack);
             selectedScreenOriginal.SetActive(true);
         }
+    }
+
+    public void SpawnShopItem(GameObject targetObject) {
+        shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
+    }
+
+    private void SetMonitorTransparency(GameObject monitor, float alpha) {
+        monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorAlpha(alpha);
+    }
+    
+    private void SetMonitorColor(GameObject monitor, Color color) {
+        monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(color);
     }
 }

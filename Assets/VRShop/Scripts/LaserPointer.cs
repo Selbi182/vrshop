@@ -10,6 +10,7 @@ public class LaserPointer : MonoBehaviour {
     public GameObject shopExplorer;
     public GameObject leftScrollButton;
     public GameObject rightScrollButton;
+    public GameObject searchButton;
     private GameObject targetObject;
     private GameObject targetObjectThisFrame = null;
     private float closestTargetObjectThisFrameDistance = float.MaxValue;
@@ -39,18 +40,26 @@ public class LaserPointer : MonoBehaviour {
 
         // Events when pressing the trigger button without grabbing an object
         if (Controller.GetPress(SteamVR_Controller.ButtonMask.Trigger) && !isGrabbing) {
-            // Differenet behavior for scroll buttons
+            // Differenet behavior for different buttons
             if (targetObject == leftScrollButton) {
                 SendMessage("NotifyButtonScroll", -1);
             } else if (targetObject == rightScrollButton) {
                 SendMessage("NotifyButtonScroll", 1);
             } else if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Trigger)) {
+                // Every handle for single-frame button presses
                 if (targetObject != null) {
-                    // Send the information that a screen has been selected for preview
-                    shopExplorer.SendMessage("SelectScreen", targetObject);
+                    if (targetObject == searchButton) {
+                        // Handle the search button
+                        GameObject textBox = targetObject.transform.parent.transform.Find("TextBox").gameObject;
+                        textBox.SetActive(true);
+                        shopExplorer.SendMessage("SelectScreen", textBox);
+                    } else {
+                        // Send the information that an article screen has been selected for preview
+                        shopExplorer.SendMessage("SelectScreen", targetObject);
 
-                    // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
-                    //shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
+                        // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
+                        //shopExplorer.SendMessage("SpawnShopItem", targetObject);
+                    }
                     SendMessage("HapticPulseDoLerp", 1f / 30f);
                 } else if (targetObject == null) {
                     // When clicking into the void, reset selected target

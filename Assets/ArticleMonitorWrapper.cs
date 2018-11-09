@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -76,6 +77,22 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     public void SetMonitorColor(Color color) {
         if (colorObject != null && color != null) {
             colorObject.GetComponent<Renderer>().material.SetColor(TINT_COLOR, color);
+        }
+    }
+
+    public void SetMonitorAlpha(float alpha) {
+        foreach (Transform child in transform) {
+            Renderer r = child.GetComponent<Renderer>();
+            if (r != null) {
+                TMPro.TextMeshPro textMesh = child.GetComponent<TMPro.TextMeshPro>();
+                if (textMesh != null) {
+
+                } else {
+                    Color transparentScreenColor = r.material.GetColor("_Color");
+                    transparentScreenColor.a = alpha;
+                    r.material.SetColor("_Color", transparentScreenColor);
+                }
+            }
         }
     }
 
