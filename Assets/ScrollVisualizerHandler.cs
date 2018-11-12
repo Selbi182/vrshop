@@ -24,29 +24,40 @@ public class ScrollVisualizerHandler : MonoBehaviour {
 	}
 	
 	void FixedUpdate () {
-        // Change the position of the marker according to the range 0..maximumOffset where actualOffset is the defining position at this frame's moment
-        float actualOffset = shopExplorer.GetComponent<ShopExplorerBehavior>().actualOffset;
-        float maximumOffset = shopExplorer.GetComponent<ShopExplorerBehavior>().maximumOffset;
-        float translatedMarkerPosition = ((actualOffset / maximumOffset) * markerBoxScale) - (markerBoxScale / 2f);
+        if (shopExplorer.GetComponent<ShopExplorerBehavior>().numberOfArticles > 0) {
+            // Change the position of the marker according to the range 0..maximumOffset where actualOffset is the defining position at this frame's moment
+            float actualOffset = shopExplorer.GetComponent<ShopExplorerBehavior>().actualOffset;
+            float maximumOffset = shopExplorer.GetComponent<ShopExplorerBehavior>().maximumOffset;
+            float translatedMarkerPosition = ((actualOffset / maximumOffset) * markerBoxScale) - (markerBoxScale / 2f);
 
-        // Apply the new position
-        Vector3 newPos = positionMarker.transform.position;
-        newPos.x = translatedMarkerPosition;
-        positionMarker.transform.position = newPos;
+            // Apply the new position
+            Vector3 newPos = positionMarker.transform.position;
+            newPos.x = translatedMarkerPosition;
+            positionMarker.transform.position = newPos;
 
-        // Disable the buttons according to the position
-        leftButton.tag = SCREEN_SELECTABLE;
-        rightButton.tag = SCREEN_SELECTABLE;
-        SetColor(leftButton, enabledColor);
-        SetColor(rightButton, enabledColor);
-        if (actualOffset == 0f) {
+            // Disable the buttons according to the position
+            leftButton.tag = SCREEN_SELECTABLE;
+            rightButton.tag = SCREEN_SELECTABLE;
+            SetColor(leftButton, enabledColor);
+            SetColor(rightButton, enabledColor);
+            if (actualOffset == 0f) {
+                leftButton.tag = SCREEN_NOTSELECTABLE;
+                SetColor(leftButton, disabledColor);
+            } else if (actualOffset == maximumOffset) {
+                rightButton.tag = SCREEN_NOTSELECTABLE;
+                SetColor(rightButton, disabledColor);
+            }
+        } else {
+            Vector3 newPos = positionMarker.transform.position;
+            newPos.x = 0f;
+            positionMarker.transform.position = newPos;
+
             leftButton.tag = SCREEN_NOTSELECTABLE;
-            SetColor(leftButton, disabledColor);
-        } else if (actualOffset == maximumOffset) {
             rightButton.tag = SCREEN_NOTSELECTABLE;
+            SetColor(leftButton, disabledColor);
             SetColor(rightButton, disabledColor);
         }
-	}
+    }
 
     private void SetColor(GameObject button, Color color) {
         button.transform.GetComponent<Renderer>().material.SetColor(TINT_COLOR, color);

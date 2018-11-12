@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class ArticleMonitorWrapper : MonoBehaviour {
 
@@ -25,15 +26,21 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     private const string NAME_OBJECT  = "Name";
     private const string IMAGE_OBJECT = "Image";
     private const string PRICE_OBJECT = "Price";
+    private const string DESCRIPTION_OBJECT = "Description";
+    private const string CART_OBJECT = "Cart";
 
     private const string TINT_COLOR = "_TintColor";
 
-    public int articleId;
-    public string name;
-    private string oldName;
-    public decimal price;
-    private decimal oldPrice;
+    public int wallPositionId;
+    public int articleItemId;
 
+    private VRShopArticle article;
+    private new string name;
+    private decimal price;
+    private string description;
+
+    private int cartQuanity;
+    private const int DEFAULT_QUANTITY = 1;
     private const char CURRENCY_SYMBOL = '€';
 
     void Awake() {
@@ -46,25 +53,17 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         priceObjectFront = frontObject.transform.Find(PRICE_OBJECT).gameObject;
 
         backObject = transform.Find(BACK_OBJECT).gameObject;
-        // TODO backface
+        nameObjectBack = backObject.transform.Find(NAME_OBJECT).gameObject;
+        imageObjectBack = backObject.transform.Find(IMAGE_OBJECT).gameObject;
+        priceObjectBack = backObject.transform.Find(PRICE_OBJECT).gameObject;
+        descriptionObjectBack = backObject.transform.Find(DESCRIPTION_OBJECT).gameObject;
+        cartObjectBack = backObject.transform.Find(CART_OBJECT).gameObject;
 
         // TODO nur zum testen
-        articleId = 0;
         name = "Lorem ipsum";
         price = 12.99m;
-    }
-    
-
-    void Update() {
-        if (oldName != name) {
-            UpdateName();
-            oldName = name;
-        }
-
-        if (oldPrice != price) {
-            UpdatePrice();
-            oldPrice = price;
-        }
+        articleItemId = 0;
+        cartQuanity = 2;
     }
 
     public Color GetMonitorColor() {
@@ -81,6 +80,8 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     }
 
     public void SetMonitorAlpha(float alpha) {
+        // TODO fix proper fading
+        /*
         foreach (Transform child in transform) {
             Renderer r = child.GetComponent<Renderer>();
             if (r != null) {
@@ -94,6 +95,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
                 }
             }
         }
+        */
     }
 
     public void SetBacksideActive(bool active) {
@@ -103,17 +105,58 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     }
 
     private void UpdateName() {
-        if (nameObjectFront != null) {
-            TMPro.TextMeshPro textMesh = nameObjectFront.transform.GetComponent<TMPro.TextMeshPro>();
-            textMesh.SetText(name);
+        if (nameObjectFront != null && nameObjectBack != null) {
+            // Front
+            TextMeshPro frontName = nameObjectFront.transform.GetComponent<TextMeshPro>();
+            frontName.SetText(name);
+            frontName.ForceMeshUpdate(true);
+
+            // Back
+            TextMeshPro backName = nameObjectBack.transform.GetComponent<TextMeshPro>();
+            backName.SetText(name);
+            backName.ForceMeshUpdate(true);
+        }
+    }
+
+    private void UpdateDescription() {
+        if (descriptionObjectBack != null) {
+            // Back
+            TextMeshPro backDescription = descriptionObjectBack.transform.GetComponent<TextMeshPro>();
+            backDescription.SetText(description);
+            backDescription.ForceMeshUpdate(true);
         }
     }
 
     private void UpdatePrice() {
-        if (priceObjectFront != null) {
-            string newPrice = string.Format("{0:0.00} {1}", price.ToString(), CURRENCY_SYMBOL);
-            TMPro.TextMeshPro textMesh = priceObjectFront.transform.GetComponent<TMPro.TextMeshPro>();
-            textMesh.SetText(newPrice);
+        if (priceObjectFront != null && nameObjectBack != null) {
+            // Front
+            string newPriceFront = string.Format("{0:0.00} {1}", price.ToString(), CURRENCY_SYMBOL);
+            TextMeshPro frontPrice = priceObjectFront.transform.GetComponent<TextMeshPro>();
+            frontPrice.SetText(newPriceFront);
+            frontPrice.ForceMeshUpdate(true);
+
+            // Back
+            //1x 2229,99€ = 2229,99€
+            string newPriceBack = string.Format("{2}x {0:0.00} {1} = {3:0.00} {1}", price.ToString(), CURRENCY_SYMBOL, cartQuanity, (price*cartQuanity).ToString());
+            TextMeshPro backPrice = priceObjectBack.transform.GetComponent<TextMeshPro>();
+            backPrice.SetText(newPriceBack);
+            backPrice.ForceMeshUpdate(true);
         }
+    }
+
+    public void SetArticle(VRShopArticle article) {
+        if (this.article == article) {
+            return;
+        }
+        cartQuanity = DEFAULT_QUANTITY;
+
+        name = article.Name;
+        price = article.Price;
+        description = article.Description;
+        // TODO the rest
+
+        UpdateName();
+        UpdatePrice();
+        UpdateDescription();
     }
 }

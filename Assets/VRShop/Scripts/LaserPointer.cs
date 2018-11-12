@@ -50,7 +50,7 @@ public class LaserPointer : MonoBehaviour {
                 if (targetObject != null) {
                     if (targetObject == searchButton) {
                         // Handle the search button
-                        GameObject textBox = targetObject.transform.parent.transform.Find("TextBox").gameObject;
+                        GameObject textBox = targetObject.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
                         textBox.SetActive(true);
                         shopExplorer.SendMessage("SelectScreen", textBox);
                     } else {

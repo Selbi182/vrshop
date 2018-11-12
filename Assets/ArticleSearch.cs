@@ -36,10 +36,11 @@ public class ArticleSearch : MonoBehaviour {
                     // Enter/Return
                     case '\n':
                     case '\r':
-                        IList<VRShopArticle> articles = VRShopDBConnector.SearchForArticle(currentSearchString);
-                        foreach (VRShopArticle article in articles) {
-                            Debug.Log(article);
+                        IList<VRShopArticle> searchResultArticles = VRShopDBConnector.SearchForArticle(currentSearchString);
+                        if (searchResultArticles != null && searchResultArticles.Count > 0) {
+                            OfferResults(searchResultArticles);
                         }
+                        ResetSearch();
                         break;
 
                     // Regular char input
@@ -65,5 +66,10 @@ public class ArticleSearch : MonoBehaviour {
     private void ResetSearch() {
         currentSearchString = "";
         UpdateMeshText(DEFAULT_TEXT);
+    }
+
+    public void OfferResults(IList<VRShopArticle> articles) {
+        // Notify the ShopExplorer that new articles have been found
+        SendMessageUpwards("ReceiveSearchResutls", articles);
     }
 }

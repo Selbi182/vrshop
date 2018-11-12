@@ -8,31 +8,31 @@ using Mono.Data.Sqlite;
 public static class VRShopDBConnector {
 
     private static readonly string DB_FILE_NAME = "vrshop.db";
-    private static readonly int DB_ARTICLES_ID_COLUMN = 0;
-    private static readonly int DB_ARTICLES_NAME_COLUMN = 1;
-    private static readonly int DB_ARTICLES_PRICE_COLUMN = 2;
-    private static readonly int DB_ARTICLES_DESCRIPTION_COLUMN = 3;
+    private const string S_COL_ID = "id";
+    private const string S_COL_NAME = "name";
+    private const string S_COL_PRICE = "price";
+    private const string S_COL_DESCRIPTION = "description";
+    private const string S_COL_SIZE = "model_size";
+    private const string S_COL_THUMBNAIL = "thumbnail";
 
     private static readonly string ARTICLE_SEARCH_STRING_PLACEHOLDER = "@ArticleSearchString";
     private static readonly string ARTICLE_SEARCH_QUERY = string.Format(@"
-        SELECT * FROM tbl_articles a
-            WHERE a.name
-                LIKE {0}
-            OR a.category IN (
-                WITH RECURSIVE rec_categories(parent) AS (
-                    SELECT DISTINCT id
-                        FROM tbl_categories c1
-                        WHERE c1.category_name LIKE {0}
-                    UNION ALL
-                    SELECT c.parent_id 
-                        FROM tbl_categories c, rec_categories r
-                        WHERE c.id = r.parent
+        SELECT a.id, a.name, a.price, a.description, a.model_size, a.thumbnail FROM tbl_articles a
+            WHERE
+                a.name LIKE {0}
+            OR
+                a.category IN (
+                    WITH parents AS (
+                        SELECT id, name FROM tbl_categories
+                            WHERE name LIKE {0}
+                    )
+                    SELECT c.id FROM tbl_categories c
+                        JOIN parents
+                            ON c.parent_id = parents.id
+                    UNION
+                        SELECT p.id FROM parents p
                 )
-                SELECT DISTINCT id
-                    FROM tbl_categories c
-                    WHERE c.id IN rec_categories
-            )
-            ORDER BY a.id DESC
+            ORDER BY a.category DESC
     ", ARTICLE_SEARCH_STRING_PLACEHOLDER);
 
     public static IList<VRShopArticle> SearchForArticle(string searchString) {
@@ -54,15 +54,51 @@ public static class VRShopDBConnector {
 
             // Exectute the query and read the results
             var reader = query.ExecuteReader();
+
+            // Initialize column ordinals
+            int colId = reader.GetOrdinal(S_COL_ID);
+            int colName = reader.GetOrdinal(S_COL_NAME);
+            int colPrice = reader.GetOrdinal(S_COL_PRICE);
+            int colDescription = reader.GetOrdinal(S_COL_DESCRIPTION);
+            int colSize =  reader.GetOrdinal(S_COL_SIZE);
+            int colThumbnail = reader.GetOrdinal(S_COL_THUMBNAIL);
+
+            // Iterate through every returned row
             while (reader.Read()) {
-                // DB-Schema: id | price | articleName | description
-                int id = reader.GetInt32(DB_ARTICLES_ID_COLUMN);
-                decimal price = reader.GetDecimal(DB_ARTICLES_PRICE_COLUMN);
-                string articleName = reader.GetString(DB_ARTICLES_NAME_COLUMN);
-                string description = reader.GetString(DB_ARTICLES_DESCRIPTION_COLUMN);
+                int id;
+                string articleName;
+                decimal price;
+                string description;
+                float size;
+                byte[] img;
+
+                // NOT NULL constraint applies, null check therefore not required
+                id = reader.GetInt32(colId);
+                articleName = reader.GetString(colName);
+                price = reader.GetDecimal(colPrice);
+
+                // May be null, needs to be caught
+                if (!reader.IsDBNull(colDescription)) {
+                    description = reader.GetString(colDescription);
+                } else {
+                    description = "";
+                }
+
+                if (!reader.IsDBNull(colSize)) {
+                    double dsize = reader.GetDouble(colSize);
+                    size = (float)dsize;
+                } else {
+                    size = 1.0f;
+                }
+
+                if (!reader.IsDBNull(colThumbnail)) {
+                    img = (byte[])reader[colThumbnail];
+                } else {
+                    img = null;
+                }
 
                 // Add to result list
-                VRShopArticle article = new VRShopArticle(id, price, articleName, description);
+                VRShopArticle article = new VRShopArticle(id, price, articleName, description, (float)size, img);
                 queriedArticles.Add(article);
             }
             dbConnection.Close();
