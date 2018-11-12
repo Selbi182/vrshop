@@ -1,0 +1,3 @@
+/System/Library/Fonts/Core/Kohinoor.ttc
+/System/Library/Fonts/Core/HiraginoKakuGothic.ttc
+/System/Library/Fonts/Core/GeezaPro.ttc

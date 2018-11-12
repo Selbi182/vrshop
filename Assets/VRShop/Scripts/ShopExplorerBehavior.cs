@@ -19,11 +19,11 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public GameObject prefabScreenContainer;
     public GameObject shopItemSpawner;
     public GameObject infoScreen;
-    private GameObject expandedScreen;
-    private GameObject selectedScreenOriginal;
-    private GameObject selectedScreenOriginalCurrent;
-    private GameObject selectedScreenMoveBack;
+
     public float selectionSpeed;
+    private GameObject selectedScreen;
+    private GameObject expandedScreen;
+    private VRShopArticle selectedArticle;
 
     // Used for swiping
     private enum Direction {
@@ -52,14 +52,12 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     // Collection of active articles
     private IList<VRShopArticle> articles;
-    private IList<VRShopArticle> newArticles;
 
     void Start() {
         swipeDirection = Direction.STILL;
         screenColor = prefabScreenContainer.GetComponent<ArticleMonitorWrapper>().GetMonitorColor();
 
         articles = new List<VRShopArticle>();
-        newArticles = new List<VRShopArticle>();
 
         // Spawn the prefabs
         screens = new List<GameObject>();
@@ -75,9 +73,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
     /// /////////////////////////////////////////////////
     /// </summary>
     void FixedUpdate() {
-        // Check if any new article search results are available and update the ShopExplorer if so
-        UpdateSearchResults();
-
         // Make the screen rotation smooth
         offsetChangeThisFrame = Mathf.Lerp(offsetChangeThisFrame, 0f, Time.deltaTime);
         if (Mathf.Abs(offsetChangeThisFrame) > maximumScrollSpeed) {
@@ -116,7 +111,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
         for (int i = 0; i < screens.Count; i++) {
             GameObject screen = screens[i];
             ArticleMonitorWrapper wrapper = screen.GetComponent<ArticleMonitorWrapper>();
-
 
             if (i >= articles.Count) {
                 screen.SetActive(false);
@@ -193,31 +187,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
                 Time.deltaTime * selectionSpeed
             );
         }
-        
-        // Handle the smooth transition for moving a deselected screen back to its position
-        if (selectedScreenMoveBack != null && selectedScreenOriginal != null && expandedScreen != selectedScreenMoveBack) {
-            if (offsetChangeThisFrame != 0f && Vector3.Distance(selectedScreenMoveBack.transform.position, selectedScreenOriginal.transform.position) < 1f) {
-                FinishMovingBack();
-            } else {
-                selectedScreenMoveBack.transform.position = Vector3.Lerp(
-                    selectedScreenMoveBack.transform.localPosition,
-                    selectedScreenOriginal.transform.localPosition,
-                    Time.deltaTime * selectionSpeed * 2
-                );
-
-                selectedScreenMoveBack.transform.localScale = Vector3.Lerp(
-                    selectedScreenMoveBack.transform.localScale,
-                    selectedScreenOriginal.transform.localScale,
-                    Time.deltaTime * selectionSpeed * 2
-                );
-
-                selectedScreenMoveBack.transform.rotation = Quaternion.Lerp(
-                    selectedScreenMoveBack.transform.localRotation,
-                    selectedScreenOriginal.transform.localRotation,
-                    Time.deltaTime * selectionSpeed * 2
-                );
-            }
-        }
     }
     /////////////////////////////////////////////////
 
@@ -228,40 +197,30 @@ public class ShopExplorerBehavior : MonoBehaviour {
         // Create a clone of the screen with visible backside (pretend that it's the same gameobject as the selected one)
         isArticleMonitor = screen.transform.parent.transform == transform;
         expandedScreen = GameObject.Instantiate(screen, transform);
+        if (isArticleMonitor) {
+            selectedArticle = screen.GetComponent<ArticleMonitorWrapper>().GetArticle();
+            expandedScreen.GetComponent<ArticleMonitorWrapper>().SetArticle(selectedArticle);
+        } else { 
+            selectedArticle = null;
+        }
         expandedScreen.tag = SCREEN_NOTSELECTABLE;
         SetBacksideActive(expandedScreen, true);
-        screen.SetActive(false);
 
-        // Remember which screen was selected
-        selectedScreenOriginalCurrent = screen;
+        // Rememeber the selected screen
+        selectedScreen = screen;
+        screen.SetActive(false);
     }
 
     public void UnselectScreen() {
         if (expandedScreen != null) {
-            if (!isArticleMonitor) {
-                // If the previously selected screen wasn't an article monitor, destroy it
-                Destroy(expandedScreen);
+            Destroy(expandedScreen);
+            if (isArticleMonitor) {
+                selectedScreen.SetActive(true);
+                selectedArticle = null;
             }
-
-            // If a screen was already marked for moving back, forget about it
-            FinishMovingBack();
-
-            // Mark previously selected monitor as ready for moving back
-            selectedScreenMoveBack = expandedScreen;
-            selectedScreenOriginal = selectedScreenOriginalCurrent;
-            selectedScreenOriginalCurrent = null;
-        }
-        expandedScreen = null;
-    }
-
-    private void FinishMovingBack() {
-        if (selectedScreenMoveBack != null) {
-            Destroy(selectedScreenMoveBack);
-            selectedScreenOriginal.SetActive(true);
         }
     }
-
-
+    
 
     public void UpdateOffset(float newOffset) {
         Direction newSwipeDirection = Direction.STILL;
@@ -315,7 +274,9 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
 
     public void SpawnShopItem(GameObject targetObject) {
-        shopItemSpawner.SendMessage("SpawnShopItem", targetObject);
+        if (selectedArticle != null) {
+            shopItemSpawner.SendMessage("SpawnShopItem", selectedArticle);
+        }
     }
 
     private void SetMonitorTransparency(GameObject monitor, float alpha) {
@@ -327,25 +288,22 @@ public class ShopExplorerBehavior : MonoBehaviour {
     }
 
 
-
-
-    private void UpdateSearchResults() {
-        if (articles != newArticles) {
-            //UnselectScreen();
-
-            // Make the new articles ready
-            articles = newArticles;
-
-            // Reset position
-            actualOffset = 0f;
-            offsetChangeThisFrame = 0f;
-
-            // Update the number of articles
-            numberOfArticles = newArticles.Count;
-        }
-    }
-
     public void ReceiveSearchResutls(IList<VRShopArticle> searchResultArticles) {
-        newArticles = searchResultArticles;
+        articles = searchResultArticles;
+
+        // Hide search textbox
+        UnselectScreen();
+
+        // Reset position
+        actualOffset = 0f;
+        offsetChangeThisFrame = 0f;
+
+        // Update the number of articles
+        numberOfArticles = articles.Count;
+
+        // Update number of shown articles
+        for (int i = 0; i < numberOfArticles; i++) {
+            screens[i].SetActive(true);
+        }
     }
 }

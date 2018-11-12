@@ -53,12 +53,15 @@ public class LaserPointer : MonoBehaviour {
                         GameObject textBox = targetObject.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
                         textBox.SetActive(true);
                         shopExplorer.SendMessage("SelectScreen", textBox);
+                    } else if (targetObject.transform.parent.name.Equals("Cart")) {
+                        // Handle cart presses
+                        targetObject.SendMessage("HandleCartSelection");
                     } else {
                         // Send the information that an article screen has been selected for preview
                         shopExplorer.SendMessage("SelectScreen", targetObject);
 
                         // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
-                        //shopExplorer.SendMessage("SpawnShopItem", targetObject);
+                        shopExplorer.SendMessage("SpawnShopItem", targetObject);
                     }
                     SendMessage("HapticPulseDoLerp", 1f / 30f);
                 } else if (targetObject == null) {

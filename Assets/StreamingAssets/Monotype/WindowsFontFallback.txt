@@ -1,0 +1,3 @@
+C:\Windows\Fonts\Arial.ttf
+C:\Windows\Fonts\Nirmala.ttf
+C:\Windows\Fonts\MSYH.TTC

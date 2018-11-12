@@ -1,0 +1,3 @@
+/system/fonts/NotoSansDevanagari-Regular.ttf
+/system/fonts/NotoSansCJK-Regular.ttc
+/system/fonts/NotoNaskhArabicUI-Regular.ttf

@@ -69,7 +69,7 @@ SubShader {
 		WriteMask [_StencilWriteMask]
 	}
 
-	Cull [_CullingMode]
+	Cull [_CullMode]
 	ZWrite Off
 	Lighting Off
 	Fog { Mode Off }

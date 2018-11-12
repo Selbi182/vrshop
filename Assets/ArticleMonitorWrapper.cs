@@ -20,6 +20,8 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     public GameObject descriptionObjectBack;
     public GameObject cartObjectBack;
 
+    public IList<GameObject> allChildren;
+
     private const string COLOR_OBJECT = "Color";
     private const string FRONT_OBJECT = "Front";
     private const string BACK_OBJECT  = "Back";
@@ -34,13 +36,14 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     public int wallPositionId;
     public int articleItemId;
 
-    private VRShopArticle article;
-    private new string name;
-    private decimal price;
-    private string description;
+    private VRShopArticle assignedArticle;
+    private string articleName;
+    private decimal articlePrice;
+    private string articleDescription;
+    private byte[] articleImage;
 
-    private int cartQuanity;
     private const int DEFAULT_QUANTITY = 1;
+    public int cartQuanity = DEFAULT_QUANTITY;
     private const char CURRENCY_SYMBOL = '€';
 
     void Awake() {
@@ -59,11 +62,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         descriptionObjectBack = backObject.transform.Find(DESCRIPTION_OBJECT).gameObject;
         cartObjectBack = backObject.transform.Find(CART_OBJECT).gameObject;
 
-        // TODO nur zum testen
-        name = "Lorem ipsum";
-        price = 12.99m;
-        articleItemId = 0;
-        cartQuanity = 2;
+
     }
 
     public Color GetMonitorColor() {
@@ -98,6 +97,8 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         */
     }
 
+
+
     public void SetBacksideActive(bool active) {
         if (backObject != null) {
             backObject.SetActive(active);
@@ -105,58 +106,69 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     }
 
     private void UpdateName() {
-        if (nameObjectFront != null && nameObjectBack != null) {
-            // Front
-            TextMeshPro frontName = nameObjectFront.transform.GetComponent<TextMeshPro>();
-            frontName.SetText(name);
-            frontName.ForceMeshUpdate(true);
+        // Front
+        TextMeshPro frontName = nameObjectFront.transform.GetComponent<TextMeshPro>();
+        frontName.SetText(articleName);
+        frontName.ForceMeshUpdate(true);
 
-            // Back
-            TextMeshPro backName = nameObjectBack.transform.GetComponent<TextMeshPro>();
-            backName.SetText(name);
-            backName.ForceMeshUpdate(true);
-        }
+        // Back
+        TextMeshPro backName = nameObjectBack.transform.GetComponent<TextMeshPro>();
+        backName.SetText(articleName);
+        backName.ForceMeshUpdate(true);
     }
 
     private void UpdateDescription() {
-        if (descriptionObjectBack != null) {
-            // Back
-            TextMeshPro backDescription = descriptionObjectBack.transform.GetComponent<TextMeshPro>();
-            backDescription.SetText(description);
-            backDescription.ForceMeshUpdate(true);
-        }
+        // Back
+        TextMeshPro backDescription = descriptionObjectBack.transform.GetComponent<TextMeshPro>();
+        backDescription.SetText(articleDescription);
+        backDescription.ForceMeshUpdate(true);
     }
 
     private void UpdatePrice() {
-        if (priceObjectFront != null && nameObjectBack != null) {
-            // Front
-            string newPriceFront = string.Format("{0:0.00} {1}", price.ToString(), CURRENCY_SYMBOL);
-            TextMeshPro frontPrice = priceObjectFront.transform.GetComponent<TextMeshPro>();
-            frontPrice.SetText(newPriceFront);
-            frontPrice.ForceMeshUpdate(true);
+        // Front
+        string newPriceFront = string.Format("{0:0.00} {1}", articlePrice.ToString(), CURRENCY_SYMBOL);
+        TextMeshPro frontPrice = priceObjectFront.transform.GetComponent<TextMeshPro>();
+        frontPrice.SetText(newPriceFront);
+        frontPrice.ForceMeshUpdate(true);
 
-            // Back
-            //1x 2229,99€ = 2229,99€
-            string newPriceBack = string.Format("{2}x {0:0.00} {1} = {3:0.00} {1}", price.ToString(), CURRENCY_SYMBOL, cartQuanity, (price*cartQuanity).ToString());
-            TextMeshPro backPrice = priceObjectBack.transform.GetComponent<TextMeshPro>();
-            backPrice.SetText(newPriceBack);
-            backPrice.ForceMeshUpdate(true);
+        // Back
+        //1x 2229,99€ = 2229,99€
+        string newPriceBack = string.Format("{2}x {0:0.00} {1} = {3:0.00} {1}", articlePrice.ToString(), CURRENCY_SYMBOL, cartQuanity, (articlePrice*cartQuanity).ToString());
+        TextMeshPro backPrice = priceObjectBack.transform.GetComponent<TextMeshPro>();
+        backPrice.SetText(newPriceBack);
+        backPrice.ForceMeshUpdate(true);
+    }
+
+    private void UpdateImage() {
+        if (articleImage != null) {
+            Texture2D thumbnail = new Texture2D(1, 1);
+            thumbnail.LoadImage(articleImage);
+            imageObjectFront.GetComponent<Renderer>().material.mainTexture = thumbnail;
+            imageObjectBack.GetComponent<Renderer>().material.mainTexture = thumbnail;
+
+            // TODO aspect ratio
         }
     }
 
     public void SetArticle(VRShopArticle article) {
-        if (this.article == article) {
+        if (article == assignedArticle) {
             return;
         }
         cartQuanity = DEFAULT_QUANTITY;
 
-        name = article.Name;
-        price = article.Price;
-        description = article.Description;
-        // TODO the rest
+        articleName = article.Name;
+        articlePrice = article.Price;
+        articleDescription = article.Description;
+        articleImage = article.Img;
+        assignedArticle = article;
 
         UpdateName();
         UpdatePrice();
         UpdateDescription();
+        UpdateImage();
+    }
+
+    public VRShopArticle GetArticle() {
+        return assignedArticle;
     }
 }
