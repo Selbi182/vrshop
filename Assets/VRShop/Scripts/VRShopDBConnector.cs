@@ -69,7 +69,7 @@ public static class VRShopDBConnector {
                 string articleName;
                 decimal price;
                 string description;
-                float size;
+                float? size;
                 byte[] img;
 
                 // NOT NULL constraint applies, null check therefore not required
@@ -88,7 +88,7 @@ public static class VRShopDBConnector {
                     double dsize = reader.GetDouble(colSize);
                     size = (float)dsize;
                 } else {
-                    size = 1.0f;
+                    size = null;
                 }
 
                 if (!reader.IsDBNull(colThumbnail)) {
@@ -98,7 +98,7 @@ public static class VRShopDBConnector {
                 }
 
                 // Add to result list
-                VRShopArticle article = new VRShopArticle(id, price, articleName, description, (float)size, img);
+                VRShopArticle article = new VRShopArticle(id, price, articleName, description, size, img);
                 queriedArticles.Add(article);
             }
             dbConnection.Close();

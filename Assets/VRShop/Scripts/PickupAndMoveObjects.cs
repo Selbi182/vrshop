@@ -17,13 +17,14 @@ public class PickupAndMoveObjects : MonoBehaviour {
     public GameObject pickupObjectsParent;
 
     // Connected Objects
-    private GameObject pickupObj;
+    [HideInInspector]
+    public GameObject pickupObj;
     private FixedJoint fixedJoint;
 
     public float throwVelocity = 1f;
 
     [HideInInspector]
-    public Boolean isGrabbing = false;
+    public bool isGrabbing = false;
 
     // Initialize 
     void Start() {
@@ -42,6 +43,7 @@ public class PickupAndMoveObjects : MonoBehaviour {
         // Release object if trigger button is released (with velocity)
         if (Controller.GetPressDown(TRIGGER_BUTTON)) {
             if (pickupObj != null) {
+                pickupObj.SendMessageUpwards("DetachHoveringObject");
                 fixedJoint.connectedBody = pickupObj.GetComponent<Rigidbody>();
                 isGrabbing = true;
             }

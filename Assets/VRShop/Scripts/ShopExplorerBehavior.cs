@@ -213,6 +213,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     public void UnselectScreen() {
         if (expandedScreen != null) {
+            shopItemSpawner.SendMessage("DestroyHoveringObject");
             Destroy(expandedScreen);
             if (isArticleMonitor) {
                 selectedScreen.SetActive(true);

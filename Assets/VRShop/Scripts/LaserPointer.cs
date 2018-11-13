@@ -14,6 +14,7 @@ public class LaserPointer : MonoBehaviour {
     private GameObject targetObject;
     private GameObject targetObjectThisFrame = null;
     private float closestTargetObjectThisFrameDistance = float.MaxValue;
+    private Outline outlineComponent;
     
 
     private readonly float laserLength = 50f;
@@ -28,18 +29,22 @@ public class LaserPointer : MonoBehaviour {
         // Replace the prefabs with clones at startup
         laserVisuals = GameObject.Instantiate(laserVisuals, transform);
         laserCollider = GameObject.Instantiate(laserCollider, transform);
+
+        // Get the template outline object
+        outlineComponent = GetComponent<Outline>();
 	}
 
     void Update() {
-        bool isGrabbing = GetComponent<PickupAndMoveObjects>().isGrabbing;
-        laserVisuals.gameObject.SetActive(!isGrabbing);
-        laserCollider.gameObject.SetActive(!isGrabbing);
-        if (isGrabbing) {
+        // Check if the controller is hovering over an object
+        bool isHovering = GetComponent<PickupAndMoveObjects>().pickupObj != null;
+        laserVisuals.gameObject.SetActive(!isHovering);
+        laserCollider.gameObject.SetActive(!isHovering);
+        if (isHovering) {
             ClearTarget();
         }
 
         // Events when pressing the trigger button without grabbing an object
-        if (Controller.GetPress(SteamVR_Controller.ButtonMask.Trigger) && !isGrabbing) {
+        if (Controller.GetPress(SteamVR_Controller.ButtonMask.Trigger) && !isHovering) {
             // Differenet behavior for different buttons
             if (targetObject == leftScrollButton) {
                 SendMessage("NotifyButtonScroll", -1);
@@ -78,6 +83,7 @@ public class LaserPointer : MonoBehaviour {
         SetLaserColor(Color.red);
         SetLaserLength(laserLength);
         if (targetObject != null) {
+            targetObject.GetComponent<Outline>().enabled = false;
             shopExplorer.SendMessage("SetMonitorInactive", targetObject);
         }
         targetObject = null;
@@ -107,6 +113,14 @@ public class LaserPointer : MonoBehaviour {
 
             SetLaserColor(Color.green);
             SetLaserLength(closestTargetObjectThisFrameDistance);
+
+            Outline o = targetObject.GetComponent<Outline>();
+            if (o == null) {
+                o = targetObject.AddComponent<Outline>();
+                o.OutlineColor = outlineComponent.OutlineColor;
+                o.OutlineWidth = outlineComponent.OutlineWidth;
+            }
+            o.enabled = true;
             shopExplorer.SendMessage("SetMonitorActive",  targetObject);
 
             closestTargetObjectThisFrameDistance = float.MaxValue;
