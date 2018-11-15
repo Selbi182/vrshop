@@ -20,7 +20,13 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     public GameObject descriptionObjectBack;
     public GameObject cartObjectBack;
 
+    public GameObject cartIncreaseObjectBack;
+    public GameObject cartDecreaseObjectBack;
+    public GameObject cartAddToCartObjectBack;
+
     public IList<GameObject> allChildren;
+
+    private Texture defaultTexture;
 
     private const string COLOR_OBJECT = "Color";
     private const string FRONT_OBJECT = "Front";
@@ -30,11 +36,14 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     private const string PRICE_OBJECT = "Price";
     private const string DESCRIPTION_OBJECT = "Description";
     private const string CART_OBJECT = "Cart";
+    private const string CART_INCREASE_OBJECT = "IncreaseCart";
+    private const string CART_DECREASE_OBJECT = "DecreaseCart";
+    private const string CART_ADDTOCART_OBJECT = "AddToCart";
 
     private const string TINT_COLOR = "_TintColor";
 
     public int wallPositionId;
-    public int articleItemId;
+    public int articleLoadIndexId;
 
     private VRShopArticle assignedArticle;
     private string articleName;
@@ -60,9 +69,14 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         imageObjectBack = backObject.transform.Find(IMAGE_OBJECT).gameObject;
         priceObjectBack = backObject.transform.Find(PRICE_OBJECT).gameObject;
         descriptionObjectBack = backObject.transform.Find(DESCRIPTION_OBJECT).gameObject;
+
         cartObjectBack = backObject.transform.Find(CART_OBJECT).gameObject;
+        cartIncreaseObjectBack = cartObjectBack.transform.Find(CART_INCREASE_OBJECT).gameObject;
+        cartDecreaseObjectBack = cartObjectBack.transform.Find(CART_DECREASE_OBJECT).gameObject;
+        cartAddToCartObjectBack = cartObjectBack.transform.Find(CART_ADDTOCART_OBJECT).gameObject;
 
-
+        // Memorize the default texture
+        defaultTexture = imageObjectFront.GetComponent<Renderer>().material.mainTexture;
     }
 
     public Color GetMonitorColor() {
@@ -77,27 +91,6 @@ public class ArticleMonitorWrapper : MonoBehaviour {
             colorObject.GetComponent<Renderer>().material.SetColor(TINT_COLOR, color);
         }
     }
-
-    public void SetMonitorAlpha(float alpha) {
-        // TODO fix proper fading
-        /*
-        foreach (Transform child in transform) {
-            Renderer r = child.GetComponent<Renderer>();
-            if (r != null) {
-                TMPro.TextMeshPro textMesh = child.GetComponent<TMPro.TextMeshPro>();
-                if (textMesh != null) {
-
-                } else {
-                    Color transparentScreenColor = r.material.GetColor("_Color");
-                    transparentScreenColor.a = alpha;
-                    r.material.SetColor("_Color", transparentScreenColor);
-                }
-            }
-        }
-        */
-    }
-
-
 
     public void SetBacksideActive(bool active) {
         if (backObject != null) {
@@ -132,7 +125,6 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         frontPrice.ForceMeshUpdate(true);
 
         // Back
-        //1x 2229,99€ = 2229,99€
         string newPriceBack = string.Format("{2}x {0:0.00} {1} = {3:0.00} {1}", articlePrice.ToString(), CURRENCY_SYMBOL, cartQuanity, (articlePrice*cartQuanity).ToString());
         TextMeshPro backPrice = priceObjectBack.transform.GetComponent<TextMeshPro>();
         backPrice.SetText(newPriceBack);
@@ -147,6 +139,9 @@ public class ArticleMonitorWrapper : MonoBehaviour {
             imageObjectBack.GetComponent<Renderer>().material.mainTexture = thumbnail;
 
             // TODO aspect ratio
+        } else {
+            imageObjectFront.GetComponent<Renderer>().material.mainTexture = defaultTexture;
+            imageObjectBack.GetComponent<Renderer>().material.mainTexture = defaultTexture;
         }
     }
 
@@ -170,5 +165,23 @@ public class ArticleMonitorWrapper : MonoBehaviour {
 
     public VRShopArticle GetArticle() {
         return assignedArticle;
+    }
+
+    public void HandleCartSelection(GameObject targetObject) {
+        if (targetObject == cartIncreaseObjectBack) {
+            cartQuanity += 1;
+            cartDecreaseObjectBack.SetActive(true);
+        } else if (targetObject == cartDecreaseObjectBack) {
+            if (cartQuanity > 1) {
+                cartQuanity -= 1;
+                if (cartQuanity <= 1) {
+                    cartDecreaseObjectBack.SetActive(false);
+                }
+            }
+        } else if (targetObject = cartAddToCartObjectBack) {
+            SendMessageUpwards("AddToCart", cartQuanity);
+        }
+
+        UpdatePrice();
     }
 }

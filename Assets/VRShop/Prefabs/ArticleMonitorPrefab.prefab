@@ -40,7 +40,6 @@ GameObject:
   - component: {fileID: 33574939496665212}
   - component: {fileID: 23562769610481686}
   - component: {fileID: 65433118900387812}
-  - component: {fileID: 114043096872004738}
   m_Layer: 0
   m_Name: IncreaseCart
   m_TagString: LaserTarget
@@ -128,14 +127,13 @@ GameObject:
   - component: {fileID: 33102567203170870}
   - component: {fileID: 23525387615997926}
   - component: {fileID: 65698186666447396}
-  - component: {fileID: 114002386048341500}
   m_Layer: 0
-  m_Name: ReduceCart
+  m_Name: DecreaseCart
   m_TagString: LaserTarget
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1404608169573598
 GameObject:
   m_ObjectHideFlags: 1
@@ -303,21 +301,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &1725839447221988
-GameObject:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4501348701273962}
-  m_Layer: 0
-  m_Name: AddToCart
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1 &1729751641199116
 GameObject:
   m_ObjectHideFlags: 1
@@ -347,9 +330,8 @@ GameObject:
   - component: {fileID: 33471673995685792}
   - component: {fileID: 23705972602630664}
   - component: {fileID: 65964191299556258}
-  - component: {fileID: 114606759484758322}
   m_Layer: 0
-  m_Name: AddToCartButton
+  m_Name: AddToCart
   m_TagString: LaserTarget
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -462,10 +444,11 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1742532826346326}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.75, y: 1.25, z: 1}
-  m_Children: []
-  m_Father: {fileID: 4501348701273962}
+  m_LocalPosition: {x: -2, y: -1.9580002, z: -0.4499998}
+  m_LocalScale: {x: 1.75, y: 1.25, z: 0.2}
+  m_Children:
+  - {fileID: 224124691865041784}
+  m_Father: {fileID: 4955266070617320}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4083796097358424
@@ -511,21 +494,6 @@ Transform:
   m_Father: {fileID: 224028060752481260}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 270, y: 0, z: 0}
---- !u!4 &4501348701273962
-Transform:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1725839447221988}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2, y: -1.9580002, z: -0.4499998}
-  m_LocalScale: {x: 1, y: 1, z: 0.2}
-  m_Children:
-  - {fileID: 224124691865041784}
-  - {fileID: 4040245338831258}
-  m_Father: {fileID: 4955266070617320}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4535147455040732
 Transform:
   m_ObjectHideFlags: 1
@@ -621,7 +589,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4644764138982696}
-  - {fileID: 4501348701273962}
+  - {fileID: 4040245338831258}
   - {fileID: 4083796097358424}
   m_Father: {fileID: 4826685093296962}
   m_RootOrder: 3
@@ -1558,18 +1526,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114002386048341500
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1287605530756112}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1778db9530cdf864888100cf4c68e6a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cartItemType: 1
 --- !u!114 &114017910587505158
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1683,18 +1639,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   m_maskType: 0
---- !u!114 &114043096872004738
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1090894905169260}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1778db9530cdf864888100cf4c68e6a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cartItemType: 0
 --- !u!114 &114062316686443246
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1903,11 +1847,11 @@ MonoBehaviour:
     lineCount: 1
     pageCount: 1
     materialCount: 1
-  m_havePropertiesChanged: 0
+  m_havePropertiesChanged: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 0
+  m_isInputParsingRequired: 1
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 23396756910543402}
@@ -2292,6 +2236,9 @@ MonoBehaviour:
   priceObjectBack: {fileID: 0}
   descriptionObjectBack: {fileID: 0}
   cartObjectBack: {fileID: 0}
+  cartIncreaseObjectBack: {fileID: 0}
+  cartDecreaseObjectBack: {fileID: 0}
+  cartAddToCartObjectBack: {fileID: 0}
   wallPositionId: 0
   articleItemId: 0
   cartQuanity: 0
@@ -2308,18 +2255,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AspectMode: 2
   m_AspectRatio: 1
---- !u!114 &114606759484758322
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1742532826346326}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1778db9530cdf864888100cf4c68e6a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cartItemType: 2
 --- !u!114 &114632688277820634
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2800,15 +2735,15 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1933374976759922}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.57999974}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 10}
+  m_LocalPosition: {x: 0, y: 0, z: -0.5800009}
+  m_LocalScale: {x: 0.14285713, y: 0.2, z: 10}
   m_Children: []
-  m_Father: {fileID: 4501348701273962}
+  m_Father: {fileID: 4040245338831258}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.97, y: 0}
+  m_AnchoredPosition: {x: 0.5542857, y: 0}
   m_SizeDelta: {x: 7, y: 1.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224187135508181114

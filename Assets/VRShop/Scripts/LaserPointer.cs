@@ -15,6 +15,8 @@ public class LaserPointer : MonoBehaviour {
     private GameObject targetObjectThisFrame = null;
     private float closestTargetObjectThisFrameDistance = float.MaxValue;
     private Outline outlineComponent;
+
+    private const string COMPARE_TAG = "LaserTarget";
     
 
     private readonly float laserLength = 50f;
@@ -54,29 +56,39 @@ public class LaserPointer : MonoBehaviour {
                 // Every handle for single-frame button presses
                 if (targetObject != null) {
                     if (targetObject == searchButton) {
-                        // Handle the search button
-                        GameObject textBox = targetObject.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
-                        textBox.SetActive(true);
-                        shopExplorer.SendMessage("SelectScreen", textBox);
+                        StartSearch();
                     } else if (targetObject.transform.parent.name.Equals("Cart")) {
                         // Handle cart presses
-                        targetObject.SendMessage("HandleCartSelection");
+                        targetObject.SendMessageUpwards("HandleCartSelection", targetObject);
+                        SendMessage("HapticPulseDo", 0.5f);
                     } else {
                         // Send the information that an article screen has been selected for preview
                         shopExplorer.SendMessage("SelectScreen", targetObject);
 
                         // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
                         shopExplorer.SendMessage("SpawnShopItem", targetObject);
+
+                        SendMessage("HapticPulseDoLerp", 1f / 30f);
                     }
-                    SendMessage("HapticPulseDoLerp", 1f / 30f);
-                } else if (targetObject == null) {
-                    // When clicking into the void, reset selected target
-                    ClearTarget();
-                    shopExplorer.SendMessage("UnselectScreen");
-                    SendMessage("HapticPulseDo", 0.5f);
                 }
             }
+        } else if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip)) {
+            // When pressing the grip button, reset selected target
+            ClearTarget();
+            shopExplorer.SendMessage("UnselectScreen");
+            SendMessage("HapticPulseDo", 0.5f);
+        } else if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+            StartSearch();
         }
+    }
+
+    private void StartSearch() {
+        // Handle the search button
+        GameObject textBox = searchButton.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
+        textBox.SetActive(true);
+        shopExplorer.SendMessage("SelectScreen", textBox);
+
+        SendMessage("HapticPulseDoLerp", 1f / 30f);
     }
 
     public void ClearTarget() {
@@ -100,29 +112,34 @@ public class LaserPointer : MonoBehaviour {
 
     private void LateUpdate() {
         if (targetObjectThisFrame != null) {
-            // Prevent haptic pulse spam
-            if (targetObjectThisFrame != targetObject) {
-                SendMessage("HapticPulseDo", 0.5f);
-            }
 
             // To prevent race conditions
             if (targetObject != null) {
                 ClearTarget();
             }
-            targetObject = targetObjectThisFrame;
 
-            SetLaserColor(Color.green);
             SetLaserLength(closestTargetObjectThisFrameDistance);
 
-            Outline o = targetObject.GetComponent<Outline>();
-            if (o == null) {
-                o = targetObject.AddComponent<Outline>();
-                o.OutlineColor = outlineComponent.OutlineColor;
-                o.OutlineWidth = outlineComponent.OutlineWidth;
-            }
-            o.enabled = true;
-            shopExplorer.SendMessage("SetMonitorActive",  targetObject);
+            if (targetObjectThisFrame.CompareTag(COMPARE_TAG)) {
+                // Prevent haptic pulse spam
+                if (targetObjectThisFrame != targetObject) {
+                    SendMessage("HapticPulseDo", 0.5f);
+                }
 
+                SetLaserColor(Color.green);
+
+                targetObject = targetObjectThisFrame;
+
+                Outline o = targetObject.GetComponent<Outline>();
+                if (o == null) {
+                    o = targetObject.AddComponent<Outline>();
+                    o.OutlineColor = outlineComponent.OutlineColor;
+                    o.OutlineWidth = outlineComponent.OutlineWidth;
+                }
+                o.enabled = true;
+                shopExplorer.SendMessage("SetMonitorActive",  targetObject);
+
+            }
             closestTargetObjectThisFrameDistance = float.MaxValue;
             targetObjectThisFrame = null;
         }

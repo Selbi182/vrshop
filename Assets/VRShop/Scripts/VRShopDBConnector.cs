@@ -63,6 +63,8 @@ public static class VRShopDBConnector {
             int colSize =  reader.GetOrdinal(S_COL_SIZE);
             int colThumbnail = reader.GetOrdinal(S_COL_THUMBNAIL);
 
+            int count = 0;
+
             // Iterate through every returned row
             while (reader.Read()) {
                 int id;
@@ -98,8 +100,43 @@ public static class VRShopDBConnector {
                 }
 
                 // Add to result list
-                VRShopArticle article = new VRShopArticle(id, price, articleName, description, size, img);
+                //VRShopArticle article = new VRShopArticle(id, price, articleName, description, size, img);
+                //queriedArticles.Add(article);
+
+                VRShopArticle article;
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
                 queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+                article = new VRShopArticle(id, price, articleName + "_" + ++count, description, size, img);
+                queriedArticles.Add(article);
+
             }
             dbConnection.Close();
         }

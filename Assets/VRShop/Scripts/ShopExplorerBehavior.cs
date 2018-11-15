@@ -1,12 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class ShopExplorerBehavior : MonoBehaviour {
 
+    private enum ArticleLoadBehavior {
+        Visible,
+        Hidden,
+        TurnVisibleForward,
+        TurnVisibleBackward
+    }
+
     public int numberOfArticles = 0;
-    public int lowerArticleLoadIndex = 0;
-    public int upperArticleLoadIndex = 0;
+    public int articleLoadOffset = 0;
 
     // Public variables
     public int screenCount;
@@ -19,6 +26,8 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public GameObject prefabScreenContainer;
     public GameObject shopItemSpawner;
     public GameObject infoScreen;
+    public GameObject forwardLoadTrigger;
+    public GameObject backwardLoadTrigger;
 
     public float selectionSpeed;
     private GameObject selectedScreen;
@@ -26,12 +35,12 @@ public class ShopExplorerBehavior : MonoBehaviour {
     private VRShopArticle selectedArticle;
 
     // Used for swiping
-    private enum Direction {
+    public enum Direction {
         LEFT  = -1,
         STILL = 0,
         RIGHT = +1
     };
-    private Direction swipeDirection;
+    public Direction swipeDirection = Direction.STILL;
     public float offsetChangeThisFrame = 0f;
     public float actualOffset = 0f;
     public float maximumOffset = 0f;
@@ -53,6 +62,9 @@ public class ShopExplorerBehavior : MonoBehaviour {
     // Collection of active articles
     private IList<VRShopArticle> articles;
 
+    // Delegation
+    private CartItemsHandler cart;
+
     void Start() {
         swipeDirection = Direction.STILL;
         screenColor = prefabScreenContainer.GetComponent<ArticleMonitorWrapper>().GetMonitorColor();
@@ -64,9 +76,14 @@ public class ShopExplorerBehavior : MonoBehaviour {
         for (int i = 1; i < screenCount + 1; i++) {
             GameObject newScreenObj = GameObject.Instantiate(prefabScreenContainer, transform);
             newScreenObj.name = "ArticleMonitor" + i.ToString("00");
-            newScreenObj.GetComponent<ArticleMonitorWrapper>().wallPositionId = i;
+            newScreenObj.GetComponent<ArticleMonitorWrapper>().wallPositionId = i - 1;
+            newScreenObj.GetComponent<ArticleMonitorWrapper>().articleLoadIndexId = i - 1;
             screens.Add(newScreenObj);
         }
+        forwardLoadTrigger = screens[0];
+        backwardLoadTrigger = null;
+
+        cart = transform.Find("Cart").GetComponent<CartItemsHandler>();
     }
 
     /// <summary>
@@ -80,12 +97,17 @@ public class ShopExplorerBehavior : MonoBehaviour {
         }
 
         // Immediately stop the movement when the rotation speed falls below a certain level
-        if (Mathf.Abs(offsetChangeThisFrame) < EPSILON) {
+        if (Mathf.Abs(offsetChangeThisFrame) < EPSILON
+            || (actualOffset < EPSILON && swipeDirection == Direction.LEFT)
+            || (actualOffset > maximumOffset - EPSILON && swipeDirection == Direction.RIGHT)) {
             offsetChangeThisFrame = 0f;
         }
 
+        // Keep swipe direction updated
+        swipeDirection = CurrentSwipeDirection();
+
         // Calculate the maximum scroll offset based on the current number of articles
-        maximumOffset = 180f * ((float)numberOfArticles / (float)screenCount);
+        maximumOffset = 360f * ((float)numberOfArticles / (float)screenCount);
 
         // Boundary scrolling
         actualOffset += offsetChangeThisFrame;
@@ -94,11 +116,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
         } else if (actualOffset > maximumOffset) {
             actualOffset = maximumOffset;
         }
-
-        // Define the current article load position
-        // TODO das hier richtig berechnen
-        lowerArticleLoadIndex = (int)(actualOffset / (180f / (screenCount / screensPerColumn))) * screensPerColumn;
-        upperArticleLoadIndex = ((int)(actualOffset / spacingX) * screensPerColumn) + (screenCount / screensPerColumn);
 
         /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,16 +126,10 @@ public class ShopExplorerBehavior : MonoBehaviour {
         int screensInColumnCount = 0;
 
         for (int i = 0; i < screens.Count; i++) {
+            // Fetch the mandatory information about the current monitor
             GameObject screen = screens[i];
             ArticleMonitorWrapper wrapper = screen.GetComponent<ArticleMonitorWrapper>();
 
-            if (i >= articles.Count) {
-                screen.SetActive(false);
-                continue;
-            }
-
-            // Update the screen content if there is any
-            wrapper.SetArticle(articles[i]);
 
             // Update the screen's positon using simple trigenometry scaled over the frame counter.
             // As a result, the screen will circle around the player (specifically, the position of ShopExplorer).
@@ -136,6 +147,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
             // Apply updates to unslected screens
             // Skip it for a selected screen
+            float previousX = screen.transform.position.x;
             screen.transform.position = pos;
             OrientateScreen(screen);
 
@@ -145,17 +157,52 @@ public class ShopExplorerBehavior : MonoBehaviour {
             if (sin < -EPSILON) {
                 screen.tag = SCREEN_NOTSELECTABLE;
                 SetMonitorInactive(screen);
-
                 float newAlpha = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
-                if (newAlpha > 0f) {
-                    screen.SetActive(true);
-                    SetMonitorTransparency(screen, newAlpha);
-                } else {
-                    screen.SetActive(false);
-                }
+                screen.SetActive(newAlpha > 0f);
             } else {
                 screen.tag = SCREEN_SELECTABLE;
             }
+
+            // Invisible loading zone behind the user (which is approaching sine 1.00)
+            if (sin - EPSILON < -1f && (pos.x * previousX) < 0f) {
+                // Get the base index
+                switch (swipeDirection) {
+                    case Direction.RIGHT:
+                        // Monitor just turned invisible by rotating right, load next article wall
+                        if (screen == forwardLoadTrigger) {
+                            wrapper.articleLoadIndexId += screenCount;
+                            screens[i + 1].GetComponent<ArticleMonitorWrapper>().articleLoadIndexId += screenCount;
+
+                            forwardLoadTrigger = screens[(wrapper.wallPositionId + screensPerColumn) % screenCount];
+                            backwardLoadTrigger = screen;
+                        }
+                        break;
+                    case Direction.LEFT:
+                        // Monitor just turned invisible by rotating left, load previous article wall
+                        if (screen == backwardLoadTrigger) {
+                            wrapper.articleLoadIndexId -= screenCount;
+                            screens[i + 1].GetComponent<ArticleMonitorWrapper>().articleLoadIndexId -= screenCount;
+
+                            forwardLoadTrigger = screen;
+                            if (wrapper.wallPositionId - screensPerColumn >= 0) {
+                                backwardLoadTrigger = screens[(wrapper.wallPositionId - screensPerColumn) % screenCount];
+                            } else {
+                                backwardLoadTrigger = screens[screenCount - screensPerColumn];
+                            }
+                        }
+                        break;
+                }
+            }
+
+            // Hide this monitor if it exceeds the maximum number of articles and all following ones
+            if (wrapper.articleLoadIndexId + 1 > articles.Count || wrapper.articleLoadIndexId < 0) {
+                screen.SetActive(false);
+                continue;
+            }
+
+            // Update the content, if needs to be
+            wrapper.SetArticle(articles[wrapper.articleLoadIndexId]);
+
         }
 
         // Cosmetic change to hide article monitors at the boundaries of the wall
@@ -223,23 +270,31 @@ public class ShopExplorerBehavior : MonoBehaviour {
     }
     
 
-    public void UpdateOffset(float newOffset) {
-        Direction newSwipeDirection = Direction.STILL;
-        if (newOffset == 0f) {
-            swipeDirection = newSwipeDirection;
-            return;
-        } else if (newOffset < 0) {
-            newSwipeDirection = Direction.LEFT;
-        } else if (newOffset > 0) {
-            newSwipeDirection = Direction.RIGHT;
+    private Direction CurrentSwipeDirection() {
+        if (offsetChangeThisFrame < 0f) {
+            return Direction.LEFT;
+        } else if (offsetChangeThisFrame > 0f) {
+            return Direction.RIGHT;
         }
+        return Direction.STILL;
+    }
 
-        if (newSwipeDirection == swipeDirection) {
+    public void UpdateOffset(float newOffset) {
+        Direction currentSwipeDirection = CurrentSwipeDirection();
+        
+        // If direction didn't change, increase swipe speed
+        if (currentSwipeDirection == swipeDirection) {
+            if (Mathf.Abs(offsetChangeThisFrame + newOffset) < EPSILON) {
+                offsetChangeThisFrame = 0f;
+                return;
+            }
             offsetChangeThisFrame += newOffset;
             return;
         }
+
+        // If direction changed, immediately stop and turn around
         offsetChangeThisFrame = newOffset;
-        swipeDirection = newSwipeDirection;
+        swipeDirection = currentSwipeDirection;
     }
 
     private void OrientateScreen(GameObject screen) {
@@ -279,10 +334,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
             shopItemSpawner.SendMessage("SpawnShopItem", selectedArticle);
         }
     }
-
-    private void SetMonitorTransparency(GameObject monitor, float alpha) {
-        monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorAlpha(alpha);
-    }
     
     private void SetMonitorColor(GameObject monitor, Color color) {
         monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(color);
@@ -298,13 +349,22 @@ public class ShopExplorerBehavior : MonoBehaviour {
         // Reset position
         actualOffset = 0f;
         offsetChangeThisFrame = 0f;
+        articleLoadOffset = 0;
+        forwardLoadTrigger = screens[0];
+        backwardLoadTrigger = null;
 
         // Update the number of articles
         numberOfArticles = articles.Count;
 
-        // Update number of shown articles
-        for (int i = 0; i < numberOfArticles; i++) {
+        // Update number of shown articles (cap it at the max number of possible screens)
+        for (int i = 0; i < Math.Min(numberOfArticles, screenCount); i++) {
             screens[i].SetActive(true);
+            screens[i].GetComponent<ArticleMonitorWrapper>().articleLoadIndexId = i;
         }
+    }
+
+    public void AddToCart(int cartQuantity) {
+        cart.AddToCart(selectedArticle, cartQuantity);
+        UnselectScreen();
     }
 }
