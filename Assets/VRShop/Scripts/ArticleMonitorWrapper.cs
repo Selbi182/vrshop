@@ -154,7 +154,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         articleName = article.Name;
         articlePrice = article.Price;
         articleDescription = article.Description;
-        articleImage = article.Img;
+        articleImage = article.Thumbnail;
         assignedArticle = article;
 
         UpdateName();

@@ -73,8 +73,10 @@ public class SteamVR_Settings : EditorWindow
 				PlayerSettings.SplashScreen.show != recommended_ShowUnitySplashScreen) ||
 #endif
 			(!EditorPrefs.HasKey(ignore + defaultIsFullScreen) &&
-				PlayerSettings.defaultIsFullScreen != recommended_DefaultIsFullScreen) ||
-			(!EditorPrefs.HasKey(ignore + defaultScreenSize) &&
+#pragma warning disable CS0618 // Typ oder Element ist veraltet
+                PlayerSettings.defaultIsFullScreen != recommended_DefaultIsFullScreen) ||
+#pragma warning restore CS0618 // Typ oder Element ist veraltet
+            (!EditorPrefs.HasKey(ignore + defaultScreenSize) &&
 				(PlayerSettings.defaultScreenWidth != recommended_DefaultScreenWidth ||
 				PlayerSettings.defaultScreenHeight != recommended_DefaultScreenHeight)) ||
 			(!EditorPrefs.HasKey(ignore + runInBackground) &&
@@ -84,8 +86,10 @@ public class SteamVR_Settings : EditorWindow
 			(!EditorPrefs.HasKey(ignore + resizableWindow) &&
 				PlayerSettings.resizableWindow != recommended_ResizableWindow) ||
 			(!EditorPrefs.HasKey(ignore + fullscreenMode) &&
-				PlayerSettings.d3d11FullscreenMode != recommended_FullscreenMode) ||
-			(!EditorPrefs.HasKey(ignore + visibleInBackground) &&
+#pragma warning disable CS0618 // Typ oder Element ist veraltet
+                PlayerSettings.d3d11FullscreenMode != recommended_FullscreenMode) ||
+#pragma warning restore CS0618 // Typ oder Element ist veraltet
+            (!EditorPrefs.HasKey(ignore + visibleInBackground) &&
 				PlayerSettings.visibleInBackground != recommended_VisibleInBackground) ||
 #if (UNITY_5_4 || UNITY_5_3 || UNITY_5_2 || UNITY_5_1 || UNITY_5_0)
 			(!EditorPrefs.HasKey(ignore + renderingPath) &&

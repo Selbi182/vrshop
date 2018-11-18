@@ -10,29 +10,30 @@ public class VRShopArticle {
     public decimal Price { get; private set; }
     public string Name { get; private set; }
     public string Description { get; private set; }
-    public float? Size { get; private set; }
-    public byte[] Img { get; private set; }
+    public byte[] Thumbnail { get; private set; }
+    public string AssetBundleName { get; private set; }
+    public float? ScaleFactor { get; private set; }
 
     // Constructor
-    public VRShopArticle(int id, decimal price, string name, string description, float? size, byte[] img) {
+    public VRShopArticle(int id, decimal price, string name, string description, byte[] thumbnail, float? scaleFactor, string assetBundleName) {
         Id = id;
         Price = price;
         Name = name;
         Description = description;
-        Size = size;
-        Img = img;
+        ScaleFactor = scaleFactor;
+        Thumbnail = thumbnail;
+        AssetBundleName = assetBundleName;
     }
 
-    public bool HasModel() {
-        // Having no scaling value implies the abscence of a model and can be used for quick checks
-        if (Size == null) {
-            return false;
+    public string GetAssetBundleNameIfModelExists() {
+        // If no model is set in the DB, there's obviously no model stored.
+        // Having no scaling factor also implies the abscence of a model.
+        if (AssetBundleName == null || ScaleFactor == null) {
+            return null;
         }
 
-        // Otherwise, test for an actual existance of a model file
-        
-        // TODO tatsächlicher check auf die datei
-        return true;
+        // Otherwise, return the model path
+        return AssetBundleName;
     }
 
     // Convencience ToString Override

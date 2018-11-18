@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class ShopItemSpawner : MonoBehaviour {
 
@@ -8,6 +9,8 @@ public class ShopItemSpawner : MonoBehaviour {
     public bool isEnbaled = true;
     public Vector3 spawnLocation = new Vector3(0f, 5f, 0f);
     public float noGravityRotationSpeed = 1f;
+
+    private readonly string ASSET_BUNDLE_PATH = @"Assets/AssetBundles";
 
     void FixedUpdate() {
         if (spawnedObject != null) {
@@ -19,34 +22,72 @@ public class ShopItemSpawner : MonoBehaviour {
     public void SpawnShopItem(VRShopArticle selectedArticle) {
         if (isEnbaled) {
             // Only spawn objects where a model is available
-            if (!selectedArticle.HasModel()) {
+            string assetBundleName = selectedArticle.GetAssetBundleNameIfModelExists();
+            string assetBundlePath = Path.Combine(ASSET_BUNDLE_PATH, assetBundleName);
+            if (!File.Exists(assetBundlePath)) {
                 return;
             }
 
             // Remove the previously spawned object if it hasn't been picked up yet
             DestroyHoveringObject();
+            
+            // Unload existing AssetBundles first that match the name of the newly loaded one
+            // Don't remove spawned objects that arem't in the hovering slot, though
+            foreach (AssetBundle abl in AssetBundle.GetAllLoadedAssetBundles()) {
+                if (abl.name.Equals(assetBundleName)) {
+                    abl.Unload(false);
+                }
+            }
 
-            // Instantiate the object in world space
-            // TODO actual import
-            GameObject articleSpawnObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            Transform t = articleSpawnObject.transform;
+            // Fetch the asset bundle from the path
+            AssetBundle ab = AssetBundle.LoadFromFile(assetBundlePath);
 
-            // Set initial locations and meta data
-            t.parent = transform;
-            t.localPosition = spawnLocation;
-            t.rotation = Quaternion.identity;
+            // Get all enclosed assets of the bundle and make sure the number of containing assets is EXACTLY 1
+            string[] assets = ab.GetAllAssetNames();
+            if (ab == null || assets.Length != 1) {
+                return;
+            }
 
-            // Scale the object
-            float scaleSize = (float)selectedArticle.Size;
-            t.localScale = new Vector3(scaleSize, scaleSize, scaleSize);
+            // Instantiate the object (imply that the first entry in the asset bundle is the only one)
+            AssetBundleRequest abr = ab.LoadAssetAsync(assets[0]);
+            foreach (GameObject g in abr.allAssets) {
+                // Find the GameObject that contains the MeshRenderer
+                GameObject articleSpawnObject = g.GetComponentInChildren<MeshRenderer>().gameObject;
 
-            // Add physics to the object and freeze it in place on spawn
-            Rigidbody r = articleSpawnObject.AddComponent<Rigidbody>();
-            r.useGravity = false;
-            r.isKinematic = true;
+                // Set initial locations and meta data
+                Transform t = articleSpawnObject.transform;
+                t.parent = transform;
+                t.localPosition = spawnLocation;
+                t.rotation = Quaternion.identity;
 
-            // Remember the spawned object
-            spawnedObject = articleSpawnObject;
+                // Scale the object
+                float scaleFactor = (float)selectedArticle.ScaleFactor;
+                t.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
+
+                // Remove all other Collider components first, just in case any are loaded
+                foreach (Collider c in articleSpawnObject.GetComponents<Collider>()) {
+                    DestroyImmediate(c, true);
+                }
+
+                // Add a generic BoxCollider (MeshColliders would be more accurate, but they're really expensive on complex models with lots of faces)
+                BoxCollider bc = articleSpawnObject.AddComponent<BoxCollider>();
+
+                // Add a MeshCollider to this object with reduced polycount
+                //MeshCollider mc = asset.AddComponent<MeshCollider>();
+                //mc.cookingOptions = MeshColliderCookingOptions.InflateConvexMesh | mc.cookingOptions;
+                //mc.convex = true;
+
+                // Add a Rigidbody, but don't enable gravity yet
+                Rigidbody r = articleSpawnObject.AddComponent<Rigidbody>();
+                r.useGravity = false;
+                r.isKinematic = !r.useGravity;
+
+                // Spawn the object
+                Instantiate(articleSpawnObject);
+
+                // Remember the spawned object
+                spawnedObject = articleSpawnObject;
+            }
         }
     }
 
@@ -62,7 +103,7 @@ public class ShopItemSpawner : MonoBehaviour {
             // Detach the spawned object from the pickup region
             Rigidbody r = spawnedObject.GetComponent<Rigidbody>();
             r.useGravity = true;
-            r.isKinematic = false;
+            r.isKinematic = !r.useGravity;
             spawnedObject = null;
         }
     }
