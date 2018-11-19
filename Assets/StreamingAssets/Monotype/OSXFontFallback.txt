@@ -1,3 +1,0 @@
-/Library/Fonts/Devanagari Sangam MN.ttc
-/Library/Fonts/AlBayan.ttc
-/System/Library/Fonts/PingFang.ttc

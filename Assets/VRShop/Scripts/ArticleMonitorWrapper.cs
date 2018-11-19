@@ -26,7 +26,6 @@ public class ArticleMonitorWrapper : MonoBehaviour {
 
     public IList<GameObject> allChildren;
 
-    private Texture defaultTexture;
 
     private const string COLOR_OBJECT = "Color";
     private const string FRONT_OBJECT = "Front";
@@ -55,6 +54,10 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     public int cartQuanity = DEFAULT_QUANTITY;
     private const char CURRENCY_SYMBOL = '€';
 
+    private Texture defaultTexture;
+    private Vector3 imgScaleFront;
+    private Vector3 imgScaleBack;
+
     void Awake() {
         // Find all the objects from the children
         colorObject = transform.Find(COLOR_OBJECT).gameObject;
@@ -75,8 +78,10 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         cartDecreaseObjectBack = cartObjectBack.transform.Find(CART_DECREASE_OBJECT).gameObject;
         cartAddToCartObjectBack = cartObjectBack.transform.Find(CART_ADDTOCART_OBJECT).gameObject;
 
-        // Memorize the default texture
+        // Memorize a couple values for the thumbnail
         defaultTexture = imageObjectFront.GetComponent<Renderer>().material.mainTexture;
+        imgScaleFront = imageObjectFront.transform.localScale;
+        imgScaleBack = imageObjectBack.transform.localScale;
     }
 
     public Color GetMonitorColor() {
@@ -138,7 +143,26 @@ public class ArticleMonitorWrapper : MonoBehaviour {
             imageObjectFront.GetComponent<Renderer>().material.mainTexture = thumbnail;
             imageObjectBack.GetComponent<Renderer>().material.mainTexture = thumbnail;
 
-            // TODO aspect ratio
+            // Preserve asect ratio
+            int width = thumbnail.width;
+            int height = thumbnail.height;
+            float aspect = (float)width / (float)height;
+
+            Vector3 scaleFront = imgScaleFront;
+            if (width >= height) {
+                scaleFront.x = scaleFront.y * aspect;
+            } else {
+                scaleFront.y = scaleFront.x * aspect;
+            }
+            imageObjectFront.transform.localScale = scaleFront;
+
+            Vector3 scale = imgScaleBack;
+            if (width >= height) {
+                imgScaleBack.x = imgScaleBack.y * aspect;
+            } else {
+                imgScaleBack.y = imgScaleBack.x * aspect;
+            }
+            imageObjectBack.transform.localScale = imgScaleBack;
         } else {
             imageObjectFront.GetComponent<Renderer>().material.mainTexture = defaultTexture;
             imageObjectBack.GetComponent<Renderer>().material.mainTexture = defaultTexture;

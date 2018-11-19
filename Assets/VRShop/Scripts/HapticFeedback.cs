@@ -6,6 +6,7 @@ using UnityEngine;
 public class HapticFeedback : MonoBehaviour {
 
     private const int MAX_PULSE = 3999;
+    private const float EPSILON = 0.01f;
 
     private SteamVR_Controller.Device Controller { get { return SteamVR_Controller.Input((int)trackedObj.index); } }
     private SteamVR_TrackedObject trackedObj;
@@ -20,9 +21,11 @@ public class HapticFeedback : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        if (lerp > float.Epsilon) {
+        if (lerp > EPSILON) {
             lerp = Mathf.Lerp(lerp, 0f, lerpSpeed);
             HapticPulseDo(lerp);
+        } else {
+            lerp = 0f;
         }
     }
 

@@ -18,7 +18,7 @@ public static class VRShopDBConnector {
 
     private static readonly string ARTICLE_SEARCH_STRING_PLACEHOLDER = "@ArticleSearchString";
     private static readonly string ARTICLE_SEARCH_QUERY = string.Format(@"
-        SELECT a.id, a.name, a.price, a.description, a.thumbnail, a.model_size, a.asset_bundle FROM tbl_articles a
+        SELECT a.id, a.name, a.price, a.description, a.thumbnail, a.model_size FROM tbl_articles a
             WHERE
                 a.name LIKE {0}
             OR
@@ -64,10 +64,7 @@ public static class VRShopDBConnector {
             int colThumbnail = reader.GetOrdinal(S_COL_THUMBNAIL);
             int colSize =  reader.GetOrdinal(S_COL_SIZE);
             int colAssetBundle = reader.GetOrdinal(S_COL_ASSETBUNDLE);
-
-            // TODO remove
-            int count = 0;
-
+            
             // Iterate through every returned row
             while (reader.Read()) {
                 int id;
@@ -100,18 +97,10 @@ public static class VRShopDBConnector {
                 if (!reader.IsDBNull(colAssetBundle)) {
                     assetBundle = reader.GetString(colAssetBundle);
                 }
-
-
+                
                 // Add to result list
-                //VRShopArticle article = new VRShopArticle(id, price, articleName, description, img, size, assetBundle);
-                //queriedArticles.Add(article);
-
-                // TODO zum Testen wird alles hier wiederholt gemacht, da der artikelbestand noch gering ist
-                VRShopArticle article;
-                for (int i = 0; i < 10; i++) {
-                    article = new VRShopArticle(id, price, articleName + ": " + ++count, description, img, size, assetBundle);
-                    queriedArticles.Add(article);
-                }
+                VRShopArticle article = new VRShopArticle(id, price, articleName, description, img, size);
+                queriedArticles.Add(article);
             }
             dbConnection.Close();
         }

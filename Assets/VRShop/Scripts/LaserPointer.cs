@@ -96,7 +96,6 @@ public class LaserPointer : MonoBehaviour {
         SetLaserLength(laserLength);
         if (targetObject != null) {
             targetObject.GetComponent<Outline>().enabled = false;
-            shopExplorer.SendMessage("SetMonitorInactive", targetObject);
         }
         targetObject = null;
     }
@@ -137,7 +136,6 @@ public class LaserPointer : MonoBehaviour {
                     o.OutlineWidth = outlineComponent.OutlineWidth;
                 }
                 o.enabled = true;
-                shopExplorer.SendMessage("SetMonitorActive",  targetObject);
 
             }
             closestTargetObjectThisFrameDistance = float.MaxValue;

@@ -7,10 +7,10 @@ public class ShopItemSpawner : MonoBehaviour {
 
     public GameObject spawnedObject;
     public bool isEnbaled = true;
-    public Vector3 spawnLocation = new Vector3(0f, 5f, 0f);
+    public GameObject spawnLocation;
     public float noGravityRotationSpeed = 1f;
 
-    private readonly string ASSET_BUNDLE_PATH = @"Assets/AssetBundles";
+    private readonly string ASSET_BUNDLE_PATH = "Assets" + Path.DirectorySeparatorChar + "AssetBundles";
 
     void FixedUpdate() {
         if (spawnedObject != null) {
@@ -22,23 +22,14 @@ public class ShopItemSpawner : MonoBehaviour {
     public void SpawnShopItem(VRShopArticle selectedArticle) {
         if (isEnbaled) {
             // Only spawn objects where a model is available
-            string assetBundleName = selectedArticle.GetAssetBundleNameIfModelExists();
-            string assetBundlePath = Path.Combine(ASSET_BUNDLE_PATH, assetBundleName);
-            if (!File.Exists(assetBundlePath)) {
+            string assetBundlePath = GetModelPath(selectedArticle);
+            if (assetBundlePath == null) {
                 return;
             }
 
             // Remove the previously spawned object if it hasn't been picked up yet
             DestroyHoveringObject();
             
-            // Unload existing AssetBundles first that match the name of the newly loaded one
-            // Don't remove spawned objects that arem't in the hovering slot, though
-            foreach (AssetBundle abl in AssetBundle.GetAllLoadedAssetBundles()) {
-                if (abl.name.Equals(assetBundleName)) {
-                    abl.Unload(false);
-                }
-            }
-
             // Fetch the asset bundle from the path
             AssetBundle ab = AssetBundle.LoadFromFile(assetBundlePath);
 
@@ -49,28 +40,32 @@ public class ShopItemSpawner : MonoBehaviour {
             }
 
             // Instantiate the object (imply that the first entry in the asset bundle is the only one)
-            AssetBundleRequest abr = ab.LoadAssetAsync(assets[0]);
-            foreach (GameObject g in abr.allAssets) {
-                // Find the GameObject that contains the MeshRenderer
+            foreach (string s in assets) {
+                // Load the asset
+                GameObject g = ab.LoadAsset(s) as GameObject;
+
+                // Find the GameObject that contains the MeshRenderer and spawn that
                 GameObject articleSpawnObject = g.GetComponentInChildren<MeshRenderer>().gameObject;
+                g = Instantiate(articleSpawnObject);
 
                 // Set initial locations and meta data
-                Transform t = articleSpawnObject.transform;
+                Transform t = g.transform;
                 t.parent = transform;
-                t.localPosition = spawnLocation;
+                t.localPosition = spawnLocation.transform.position;
                 t.rotation = Quaternion.identity;
+                t.name = selectedArticle.Name;
 
                 // Scale the object
                 float scaleFactor = (float)selectedArticle.ScaleFactor;
                 t.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
                 // Remove all other Collider components first, just in case any are loaded
-                foreach (Collider c in articleSpawnObject.GetComponents<Collider>()) {
+                foreach (Collider c in g.GetComponentsInChildren<Collider>()) {
                     DestroyImmediate(c, true);
                 }
 
                 // Add a generic BoxCollider (MeshColliders would be more accurate, but they're really expensive on complex models with lots of faces)
-                BoxCollider bc = articleSpawnObject.AddComponent<BoxCollider>();
+                BoxCollider bc = g.AddComponent<BoxCollider>();
 
                 // Add a MeshCollider to this object with reduced polycount
                 //MeshCollider mc = asset.AddComponent<MeshCollider>();
@@ -78,21 +73,26 @@ public class ShopItemSpawner : MonoBehaviour {
                 //mc.convex = true;
 
                 // Add a Rigidbody, but don't enable gravity yet
-                Rigidbody r = articleSpawnObject.AddComponent<Rigidbody>();
+                Rigidbody r = g.AddComponent<Rigidbody>();
                 r.useGravity = false;
                 r.isKinematic = !r.useGravity;
 
-                // Spawn the object
-                Instantiate(articleSpawnObject);
+                // Draw particles
+                spawnLocation.SetActive(true);
 
                 // Remember the spawned object
-                spawnedObject = articleSpawnObject;
+                spawnedObject = g;
             }
+
+            // Unload AssetBundle after everything is done to free memory
+            ab.Unload(false);
         }
     }
 
     public void DestroyHoveringObject() {
         if (spawnedObject != null) {
+            UnsetParticles();
+
             // Delete the potential previous object occupying the spawn slot
             Destroy(spawnedObject);
         }
@@ -100,11 +100,32 @@ public class ShopItemSpawner : MonoBehaviour {
 
     public void DetachHoveringObject() {
         if (spawnedObject != null) {
+            UnsetParticles();
+
             // Detach the spawned object from the pickup region
             Rigidbody r = spawnedObject.GetComponent<Rigidbody>();
             r.useGravity = true;
             r.isKinematic = !r.useGravity;
             spawnedObject = null;
         }
+    }
+
+    private void UnsetParticles() {
+        spawnLocation.SetActive(false);
+    }
+
+    private string GetModelPath(VRShopArticle a) {
+        // Having no scaling factor implies the abscence of a model.
+        if (a.ScaleFactor == null) {
+            return null;
+        }
+
+        // Otherwise, check for the actual existance of a model based on the ID and return the path
+        string id = a.Id.ToString();
+        string assetBundlePath = Path.Combine(ASSET_BUNDLE_PATH, id);
+        if (File.Exists(assetBundlePath)) {
+            return assetBundlePath;
+        }
+        return null;
     }
 }

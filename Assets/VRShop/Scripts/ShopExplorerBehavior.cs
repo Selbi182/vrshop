@@ -156,7 +156,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
             float sin = Mathf.Sin(radian);
             if (sin < -EPSILON) {
                 screen.tag = SCREEN_NOTSELECTABLE;
-                SetMonitorInactive(screen);
                 float newAlpha = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
                 screen.SetActive(newAlpha > 0f);
             } else {
@@ -310,24 +309,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
             screen.transform.GetComponent<ArticleMonitorWrapper>().SetBacksideActive(active);
         }
     }
-
-    private void SetMonitorStatus(GameObject monitor, bool status) {
-        if (monitor != null) {
-            // TODO fix für nicht artikelmonitore
-            //monitor.transform.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(status ? monitorActive : monitorInactive);
-        }
-    }
-
-    public void SetMonitorActive(GameObject monitor) {
-        SetMonitorStatus(monitor, true);
-    }
-
-    public void SetMonitorInactive(GameObject monitor) {
-        SetMonitorStatus(monitor, false);
-    }
-
-
-
 
     public void SpawnShopItem(GameObject targetObject) {
         if (selectedArticle != null) {
