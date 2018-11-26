@@ -92,7 +92,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     }
 
     public void SetMonitorColor(Color color) {
-        if (colorObject != null && color != null) {
+        if (colorObject != null) {
             colorObject.GetComponent<Renderer>().material.SetColor(TINT_COLOR, color);
         }
     }
@@ -156,11 +156,11 @@ public class ArticleMonitorWrapper : MonoBehaviour {
             }
             imageObjectFront.transform.localScale = scaleFront;
 
-            Vector3 scale = imgScaleBack;
+            Vector3 scaleBack = imgScaleBack;
             if (width >= height) {
-                imgScaleBack.x = imgScaleBack.y * aspect;
+                scaleBack.x = scaleBack.y * aspect;
             } else {
-                imgScaleBack.y = imgScaleBack.x * aspect;
+                scaleBack.y = scaleBack.x * aspect;
             }
             imageObjectBack.transform.localScale = imgScaleBack;
         } else {

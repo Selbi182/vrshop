@@ -2,51 +2,88 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Windows.Speech;
 
 public class MicrophoneRecorder : MonoBehaviour {
 
-    public bool isRecording = false;
-
-    private const int RECORDING_MAX_LENGTH = 60;
-    private const int RECORDING_FREQUENCY = 44100;
-    
+    public bool isRunning;
+    private string hypothesisResult;
+    private string dictationResult;
     private AudioSource audioSource;
+    private DictationRecognizer dictationRecognizer;
 
-    // Steam VR Stuff
-    private SteamVR_Controller.Device Controller { get { return SteamVR_Controller.Input((int)trackedObj.index); } }
-    private SteamVR_TrackedObject trackedObj;
-
-    void Start () {
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
-        isRecording = false;
+    void Start() {
+        ResetResult();
         audioSource = GetComponent<AudioSource>();
+        dictationRecognizer = InstantiateDictationRecognizer();
     }
-	
-	void Update () {
-        if (Controller == null || Microphone.devices.Length < 1) {
-            Debug.Log(Microphone.devices.Length);
+
+    void Update() {
+        isRunning = dictationRecognizer != null && dictationRecognizer.Status == SpeechSystemStatus.Running;
+    }
+
+    void OnDestroy() {
+        if (dictationRecognizer != null) {
+            dictationRecognizer.Dispose();    
+        }
+    }
+
+    public void StartSpeechToText() {
+        // Only allow dictation if a microphone is available and attached to the GameObject
+        // Don't allow more than one instance
+        if ((Microphone.devices.Length < 1 && audioSource != null)
+            || (dictationRecognizer != null && dictationRecognizer.Status.Equals(SpeechSystemStatus.Running))) {
             return;
         }
+        
+        // Launch the recognizer
+        ResetResult();
+        dictationRecognizer.Start();
+    }
 
-        if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip)) {
-            // Toggle recording mode
-            isRecording = !isRecording;
+    private DictationRecognizer InstantiateDictationRecognizer() {
+        DictationRecognizer dict = new DictationRecognizer();
 
-            // Handle whether we just started or ended a recording
-            if (isRecording) {
-                // Default microphone, no loop, max 60 seconds recording, 44100 frequency
-                audioSource.clip = Microphone.Start(null, false, RECORDING_MAX_LENGTH, RECORDING_FREQUENCY);
-            } else {
-                // Stop the recording
-                Microphone.End(null);
+        // Dictation result after a couple seconds of silence
+        dict.DictationResult += (text, confidence) => {
+            dictationResult = text;
+        };
 
-                // Play the recorded audio
-                audioSource.Play();
-            }
+        // Dication result immediately during speech
+        dict.DictationHypothesis += (text) => {
+            hypothesisResult = text;
+        };
+
+        return dict;
+    }
+
+    public string DictationResult() {
+        if (dictationResult.Length > 0) {
+            string result = dictationResult;
+            ResetResult();
+            return result;
         }
+        return null;
+    }
 
-		if (isRecording) {
-            SendMessage("HapticPulseDo", 0.1f);
+    public string HypothesisResult() {
+        if (hypothesisResult.Length > 0) {
+            string result = hypothesisResult;
+            ResetResult();
+            return result;
         }
-	}
+        return null;
+    }
+
+    public void FinishSearch() {
+        if (dictationRecognizer != null && dictationRecognizer.Status.Equals(SpeechSystemStatus.Running)) {
+            dictationRecognizer.Stop();
+        }
+    }
+
+    private void ResetResult() {
+        dictationResult = "";
+        hypothesisResult = "";
+    }
 }

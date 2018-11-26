@@ -49,9 +49,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
     private const float BOUNDARY_DEGREE = 45f;
 
     // Used for transparency
-    private Color screenColor;
-    public Color monitorActive;
-    public Color monitorInactive;
     private const string SCREEN_SELECTABLE = "LaserTarget";
     private const string SCREEN_NOTSELECTABLE = "Untagged";
     private bool isArticleMonitor = false;
@@ -67,7 +64,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     void Start() {
         swipeDirection = Direction.STILL;
-        screenColor = prefabScreenContainer.GetComponent<ArticleMonitorWrapper>().GetMonitorColor();
 
         articles = new List<VRShopArticle>();
 
@@ -325,7 +321,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
         articles = searchResultArticles;
 
         // Hide search textbox
-        UnselectScreen();
+        //UnselectScreen();
 
         // Reset position
         actualOffset = 0f;

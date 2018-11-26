@@ -14,7 +14,6 @@ public static class VRShopDBConnector {
     private const string S_COL_DESCRIPTION = "description";
     private const string S_COL_THUMBNAIL = "thumbnail";
     private const string S_COL_SIZE = "model_size";
-    private const string S_COL_ASSETBUNDLE = "asset_bundle";
 
     private static readonly string ARTICLE_SEARCH_STRING_PLACEHOLDER = "@ArticleSearchString";
     private static readonly string ARTICLE_SEARCH_QUERY = string.Format(@"
@@ -63,7 +62,6 @@ public static class VRShopDBConnector {
             int colDescription = reader.GetOrdinal(S_COL_DESCRIPTION);
             int colThumbnail = reader.GetOrdinal(S_COL_THUMBNAIL);
             int colSize =  reader.GetOrdinal(S_COL_SIZE);
-            int colAssetBundle = reader.GetOrdinal(S_COL_ASSETBUNDLE);
             
             // Iterate through every returned row
             while (reader.Read()) {
@@ -73,7 +71,6 @@ public static class VRShopDBConnector {
                 string description = "";
                 byte[] img = null;
                 float? size = null;
-                string assetBundle = null;
 
                 // NOT NULL constraint applies, null check therefore not required
                 id = reader.GetInt32(colId);
@@ -94,10 +91,6 @@ public static class VRShopDBConnector {
                     size = (float)dsize;
                 }
 
-                if (!reader.IsDBNull(colAssetBundle)) {
-                    assetBundle = reader.GetString(colAssetBundle);
-                }
-                
                 // Add to result list
                 VRShopArticle article = new VRShopArticle(id, price, articleName, description, img, size);
                 queriedArticles.Add(article);

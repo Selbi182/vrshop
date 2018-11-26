@@ -65,7 +65,7 @@ public class ShopItemSpawner : MonoBehaviour {
                 }
 
                 // Add a generic BoxCollider (MeshColliders would be more accurate, but they're really expensive on complex models with lots of faces)
-                BoxCollider bc = g.AddComponent<BoxCollider>();
+                g.AddComponent<BoxCollider>();
 
                 // Add a MeshCollider to this object with reduced polycount
                 //MeshCollider mc = asset.AddComponent<MeshCollider>();
