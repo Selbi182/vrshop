@@ -8,6 +8,7 @@ public class LaserPointer : MonoBehaviour {
     public GameObject laserCollider;
 
     public GameObject shopExplorer;
+    private ShopExplorerBehavior explorer;
     public GameObject leftScrollButton;
     public GameObject rightScrollButton;
     public GameObject searchButton;
@@ -34,6 +35,11 @@ public class LaserPointer : MonoBehaviour {
 
         // Get the template outline object
         outlineComponent = GetComponent<Outline>();
+
+        // Get the shop explorer
+        if (shopExplorer != null) {
+            explorer = shopExplorer.GetComponent<ShopExplorerBehavior>();
+        }
 	}
 
     void Update() {
@@ -63,11 +69,10 @@ public class LaserPointer : MonoBehaviour {
                         SendMessage("HapticPulseDo", 0.5f);
                     } else {
                         // Send the information that an article screen has been selected for preview
-                        shopExplorer.SendMessage("SelectScreen", targetObject);
+                        explorer.SelectScreen(targetObject);
 
                         // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
-                        shopExplorer.SendMessage("SpawnShopItem", targetObject);
-
+                        explorer.SpawnShopItem(targetObject);
                         SendMessage("HapticPulseDoLerp", 1f / 30f);
                     }
                 }
@@ -75,7 +80,7 @@ public class LaserPointer : MonoBehaviour {
         } else if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip)) {
             // When pressing the grip button, reset selected target
             ClearTarget();
-            shopExplorer.SendMessage("UnselectScreen");
+            explorer.UnselectScreen();
             SendMessage("HapticPulseDo", 0.5f);
         } else if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.ApplicationMenu)) {
             StartSearch();
@@ -86,7 +91,7 @@ public class LaserPointer : MonoBehaviour {
         // Handle the search button
         GameObject textBox = searchButton.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
         textBox.SetActive(true);
-        shopExplorer.SendMessage("SelectScreen", textBox);
+        explorer.SelectScreen(textBox);
 
         SendMessage("HapticPulseDoLerp", 1f / 30f);
     }

@@ -6,7 +6,6 @@ using UnityEngine;
 public class PickupAndMoveObjects : MonoBehaviour {
 
     // CONSTANTS
-    private const string PICKUP = "Pickup";
     private const Valve.VR.EVRButtonId TRIGGER_BUTTON = Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger;
     
     // Steam VR Stuff
@@ -59,7 +58,12 @@ public class PickupAndMoveObjects : MonoBehaviour {
 
     // Identify if we are in range of an object
     void OnTriggerStay(Collider other) {
-        if (other.transform.parent.transform.Equals(pickupObjectsParent.transform)) {
+        Transform t = other.transform.parent;
+        while (t != null && !t.Equals(pickupObjectsParent.transform)) {
+            t = t.parent;
+        }
+
+        if (t != null) {
             if (pickupObj == null) {
                 SendMessage("HapticPulseDo", 1.0f);
             }

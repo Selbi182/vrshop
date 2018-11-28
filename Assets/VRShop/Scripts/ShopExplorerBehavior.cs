@@ -25,6 +25,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public float distanceFromCenter;
     public GameObject prefabScreenContainer;
     public GameObject shopItemSpawner;
+    private ShopItemSpawner spawner;
     public GameObject infoScreen;
     public GameObject forwardLoadTrigger;
     public GameObject backwardLoadTrigger;
@@ -80,6 +81,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
         backwardLoadTrigger = null;
 
         cart = transform.Find("Cart").GetComponent<CartItemsHandler>();
+        spawner = shopItemSpawner.GetComponent<ShopItemSpawner>();
     }
 
     /// <summary>
@@ -255,7 +257,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     public void UnselectScreen() {
         if (expandedScreen != null) {
-            shopItemSpawner.SendMessage("DestroyHoveringObject");
+            spawner.DestroyHoveringObject();
             Destroy(expandedScreen);
             if (isArticleMonitor) {
                 selectedScreen.SetActive(true);
@@ -308,7 +310,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     public void SpawnShopItem(GameObject targetObject) {
         if (selectedArticle != null) {
-            shopItemSpawner.SendMessage("SpawnShopItem", selectedArticle);
+            spawner.ImportAndSpawnShopItem(selectedArticle);
         }
     }
     
@@ -319,9 +321,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     public void ReceiveSearchResutls(IList<VRShopArticle> searchResultArticles) {
         articles = searchResultArticles;
-
-        // Hide search textbox
-        //UnselectScreen();
 
         // Reset position
         actualOffset = 0f;
