@@ -145,8 +145,8 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
             // Apply updates to unslected screens
             // Skip it for a selected screen
-            float previousX = screen.transform.position.x;
-            screen.transform.position = pos;
+            float previousX = screen.transform.localPosition.x;
+            screen.transform.localPosition = pos;
             OrientateScreen(screen);
 
             // If the article ordinal in the wall of the screen is greater than the number of available articles, hide it

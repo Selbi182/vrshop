@@ -49,7 +49,11 @@ public class PickupAndMoveObjects : MonoBehaviour {
         } else if (Controller.GetPressUp(TRIGGER_BUTTON)) {
             if (fixedJoint.connectedBody != null) {
                 fixedJoint.connectedBody = null;
-                pickupObj.transform.GetComponent<Rigidbody>().velocity = Controller.velocity * throwVelocity;
+
+                Vector3 rootRotation = transform.root.rotation.eulerAngles;
+                Quaternion rootRotationWrapper = transform.root.rotation;
+
+                pickupObj.transform.GetComponent<Rigidbody>().velocity = (rootRotationWrapper * Controller.velocity) * throwVelocity;
                 pickupObj = null;
                 isGrabbing = false;
             }
