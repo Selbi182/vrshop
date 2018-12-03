@@ -10,12 +10,12 @@ public class MicrophoneRecorder : MonoBehaviour {
     public bool isRunning;
     private string hypothesisResult;
     private string dictationResult;
-    private AudioSource audioSource;
+    private AudioListener audioListener;
     private DictationRecognizer dictationRecognizer;
 
     void Start() {
         ResetResult();
-        audioSource = GetComponent<AudioSource>();
+        audioListener = GetComponent<AudioListener>();
         dictationRecognizer = InstantiateDictationRecognizer();
     }
 
@@ -32,14 +32,29 @@ public class MicrophoneRecorder : MonoBehaviour {
     public void StartSpeechToText() {
         // Only allow dictation if a microphone is available and attached to the GameObject
         // Don't allow more than one instance
-        if ((Microphone.devices.Length < 1 && audioSource != null)
-            || (dictationRecognizer != null && dictationRecognizer.Status.Equals(SpeechSystemStatus.Running))) {
-            return;
+        bool isOkayToRecord = true;
+        if (Microphone.devices.Length < 1) {
+            Debug.LogWarning("No microphone found!");
+            isOkayToRecord = false;
         }
-        
+        if (audioListener == null) {
+            Debug.LogWarning("No audio listener found!");
+            isOkayToRecord = false;
+        }
+        if (dictationRecognizer == null) {
+            Debug.LogWarning("No dictation recognizer found!");
+            isOkayToRecord = false;
+        }
+        if (dictationRecognizer != null && dictationRecognizer.Status.Equals(SpeechSystemStatus.Running)) {
+            Debug.LogWarning("Dictation recognizer is already in use!");
+            isOkayToRecord = false;
+        }
+
         // Launch the recognizer
-        ResetResult();
-        dictationRecognizer.Start();
+        if (isOkayToRecord) {
+            ResetResult();
+            dictationRecognizer.Start();
+        }
     }
 
     private DictationRecognizer InstantiateDictationRecognizer() {
@@ -53,6 +68,13 @@ public class MicrophoneRecorder : MonoBehaviour {
         // Dication result immediately during speech
         dict.DictationHypothesis += (text) => {
             hypothesisResult = text;
+        };
+
+        // Gets called every time a dictation is finished
+        dict.DictationComplete += (completionCause) => {
+            if (completionCause != DictationCompletionCause.Complete) {
+                Debug.LogWarningFormat("Dictation completed unsuccessfully: {0}", completionCause);
+            }
         };
 
         return dict;

@@ -8,7 +8,7 @@ using TMPro;
 
 public class ArticleSearch : MonoBehaviour {
 
-    public bool isWaitingForInput = true;
+    public bool isWaitingForInput;
     public GameObject headsetMicrophone;
     private MicrophoneRecorder microphoneRecorder;
 
@@ -29,7 +29,12 @@ public class ArticleSearch : MonoBehaviour {
 
     private const string DEFAULT_TEXT = "Speak to search for articles...";
 
-	void Start () {
+    public void EnableListener() {
+        isWaitingForInput = true;
+        microphoneRecorder.StartSpeechToText();
+    }
+
+    void Awake () {
         // Initialize the components
         textMesh = transform.GetComponent<TextMeshPro>();
         if (headsetMicrophone != null) {
@@ -38,7 +43,6 @@ public class ArticleSearch : MonoBehaviour {
 
         // Initialize the search
         ResetSearch();
-        isWaitingForInput = true;
     }
 
 	void Update () {
@@ -97,9 +101,6 @@ public class ArticleSearch : MonoBehaviour {
 
     private void VoiceSearch() {
         if (microphoneRecorder != null) {
-            // Keep the process alive
-            microphoneRecorder.StartSpeechToText();
-
             // Poll for any dictation results and assign the search string on success
             string dictationResult = microphoneRecorder.DictationResult();
             if (dictationResult != null) {

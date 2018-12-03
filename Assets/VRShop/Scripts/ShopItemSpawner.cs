@@ -13,7 +13,6 @@ public class ShopItemSpawner : MonoBehaviour {
 
     private ObjectImporter objImporter;
     public ImportOptions importOptions;
-    private readonly string ASSET_BUNDLE_PATH = "ArticleModels" + Path.DirectorySeparatorChar;
     private const string OBJ_PATTERN = "*.obj";
 
     private Dictionary<string, GameObject> importedModels;
@@ -214,7 +213,7 @@ public class ShopItemSpawner : MonoBehaviour {
 
         // Otherwise, check for the actual existance of a model based on the ID and return the path
         string id = a.Id.ToString();
-        string articleModelFolder = Path.Combine(ASSET_BUNDLE_PATH, id);
+        string articleModelFolder = Path.Combine(Path.Combine(Application.dataPath, VRShopDBConnector.ARTICLE_PATH), id);
 
         // Find the .obj file in this folder corresponding to the model
         // For consistency's sake, there should always only be one result in the above search

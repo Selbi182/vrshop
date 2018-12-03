@@ -4,10 +4,13 @@ using UnityEngine;
 using System;
 using System.Data;
 using Mono.Data.Sqlite;
+using System.IO;
 
 public static class VRShopDBConnector {
 
+    public static readonly string ARTICLE_PATH = "Articles";
     private static readonly string DB_FILE_NAME = "vrshop.db";
+
     private const string S_COL_ID = "id";
     private const string S_COL_NAME = "name";
     private const string S_COL_PRICE = "price";
@@ -42,7 +45,7 @@ public static class VRShopDBConnector {
         // Prevent empty searches
         if (searchString.Length > 0) {
             // Connect to the SQLite DB
-            string dbPath = string.Format("URI=file:{0}/{1}", Application.dataPath, DB_FILE_NAME);
+            string dbPath = string.Format("URI=file:{0}/{1}/{2}", Application.dataPath, ARTICLE_PATH, DB_FILE_NAME);
             SqliteConnection dbConnection = new SqliteConnection(dbPath);
             dbConnection.Open();
 

@@ -91,6 +91,7 @@ public class LaserPointer : MonoBehaviour {
         // Handle the search button
         GameObject textBox = searchButton.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
         textBox.SetActive(true);
+        textBox.GetComponent<ArticleSearch>().EnableListener();
         explorer.SelectScreen(textBox);
 
         SendMessage("HapticPulseDoLerp", 1f / 30f);
