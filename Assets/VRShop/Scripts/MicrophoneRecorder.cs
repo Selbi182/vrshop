@@ -46,7 +46,7 @@ public class MicrophoneRecorder : MonoBehaviour {
             isOkayToRecord = false;
         }
         if (dictationRecognizer != null && dictationRecognizer.Status.Equals(SpeechSystemStatus.Running)) {
-            Debug.LogWarning("Dictation recognizer is already in use!");
+            //Debug.LogWarning("Dictation recognizer is already in use!");
             isOkayToRecord = false;
         }
 
@@ -59,6 +59,7 @@ public class MicrophoneRecorder : MonoBehaviour {
 
     private DictationRecognizer InstantiateDictationRecognizer() {
         DictationRecognizer dict = new DictationRecognizer();
+        dict.InitialSilenceTimeoutSeconds = 2f;
 
         // Dictation result after a couple seconds of silence
         dict.DictationResult += (text, confidence) => {

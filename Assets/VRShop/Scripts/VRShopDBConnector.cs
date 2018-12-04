@@ -8,19 +8,28 @@ using System.IO;
 
 public static class VRShopDBConnector {
 
-    public static readonly string ARTICLE_PATH = "Articles";
+    private static readonly string APPLICATION_PATH = Directory.GetCurrentDirectory();
+    private static readonly string ARTICLE_FOLDER_NAME = "Articles";
     private static readonly string DB_FILE_NAME = "vrshop.db";
+    private static readonly string DATABASE_PATH = string.Format("URI=file:{0}/{1}/{2}", APPLICATION_PATH, ARTICLE_FOLDER_NAME, DB_FILE_NAME);
+
+    public static readonly string ARTICLE_FOLDER_PATH = Path.Combine(APPLICATION_PATH, ARTICLE_FOLDER_NAME);
 
     private const string S_COL_ID = "id";
     private const string S_COL_NAME = "name";
     private const string S_COL_PRICE = "price";
     private const string S_COL_DESCRIPTION = "description";
     private const string S_COL_THUMBNAIL = "thumbnail";
-    private const string S_COL_SIZE = "model_size";
+    private const string S_COL_SIZE = "scale";
 
     private static readonly string ARTICLE_SEARCH_STRING_PLACEHOLDER = "@ArticleSearchString";
     private static readonly string ARTICLE_SEARCH_QUERY = string.Format(@"
-        SELECT a.id, a.name, a.price, a.description, a.thumbnail, a.model_size FROM tbl_articles a
+        SELECT a.id, a.name, a.price, a.description, a.thumbnail, s.scale
+            FROM
+                tbl_articles a
+            LEFT JOIN
+                tbl_scale s
+                    ON a.scale_factor = s.id
             WHERE
                 a.name LIKE {0}
             OR
@@ -35,18 +44,18 @@ public static class VRShopDBConnector {
                     UNION
                         SELECT p.id FROM parents p
                 )
-            ORDER BY a.category DESC
+            ORDER BY
+                a.category DESC
     ", ARTICLE_SEARCH_STRING_PLACEHOLDER);
 
-    public static IList<VRShopArticle> SearchForArticle(string searchString) {
+    public static List<VRShopArticle> SearchForArticle(string searchString) {
         // Prepare return list
-        IList<VRShopArticle> queriedArticles = new List<VRShopArticle>();
+        List<VRShopArticle> queriedArticles = new List<VRShopArticle>();
 
         // Prevent empty searches
         if (searchString.Length > 0) {
             // Connect to the SQLite DB
-            string dbPath = string.Format("URI=file:{0}/{1}/{2}", Application.dataPath, ARTICLE_PATH, DB_FILE_NAME);
-            SqliteConnection dbConnection = new SqliteConnection(dbPath);
+            SqliteConnection dbConnection = new SqliteConnection(DATABASE_PATH);
             dbConnection.Open();
 
             // Prepare the query using the search keyword

@@ -9,25 +9,23 @@ public class ScrollVisualizerHandler : MonoBehaviour {
     public GameObject positionMarker;
     public GameObject positionMarkerBox;
 
-    public Color disabledColor;
-    public Color enabledColor;
     private const string TINT_COLOR = "_TintColor";
     private const string SCREEN_SELECTABLE = "LaserTarget";
     private const string SCREEN_NOTSELECTABLE = "Untagged";
 
-    private GameObject shopExplorer;
+    private ShopExplorerBehavior shopExplorer;
     private float markerBoxScale;
 
-    void Start () {
-        shopExplorer = transform.parent.gameObject;
+    void Awake() {
+        shopExplorer = transform.parent.GetComponent<ShopExplorerBehavior>();
         markerBoxScale = positionMarkerBox.transform.localScale.x;
 	}
 	
 	void FixedUpdate () {
-        if (shopExplorer.GetComponent<ShopExplorerBehavior>().numberOfArticles > 0) {
+        if (shopExplorer.numberOfArticles > 0) {
             // Change the position of the marker according to the range 0..maximumOffset where actualOffset is the defining position at this frame's moment
-            float actualOffset = shopExplorer.GetComponent<ShopExplorerBehavior>().actualOffset;
-            float maximumOffset = shopExplorer.GetComponent<ShopExplorerBehavior>().maximumOffset;
+            float actualOffset = shopExplorer.actualOffset;
+            float maximumOffset = shopExplorer.maximumOffset;
             float translatedMarkerPosition = ((actualOffset / maximumOffset) * markerBoxScale) - (markerBoxScale / 2f);
 
             // Apply the new position
@@ -38,14 +36,14 @@ public class ScrollVisualizerHandler : MonoBehaviour {
             // Disable the buttons according to the position
             leftButton.tag = SCREEN_SELECTABLE;
             rightButton.tag = SCREEN_SELECTABLE;
-            SetColor(leftButton, enabledColor);
-            SetColor(rightButton, enabledColor);
+            SetColor(leftButton, shopExplorer.colorActive);
+            SetColor(rightButton, shopExplorer.colorActive);
             if (actualOffset == 0f) {
                 leftButton.tag = SCREEN_NOTSELECTABLE;
-                SetColor(leftButton, disabledColor);
+                SetColor(leftButton, shopExplorer.colorInactive);
             } else if (actualOffset == maximumOffset) {
                 rightButton.tag = SCREEN_NOTSELECTABLE;
-                SetColor(rightButton, disabledColor);
+                SetColor(rightButton, shopExplorer.colorInactive);
             }
         } else {
             Vector3 newPos = positionMarker.transform.position;
@@ -54,8 +52,8 @@ public class ScrollVisualizerHandler : MonoBehaviour {
 
             leftButton.tag = SCREEN_NOTSELECTABLE;
             rightButton.tag = SCREEN_NOTSELECTABLE;
-            SetColor(leftButton, disabledColor);
-            SetColor(rightButton, disabledColor);
+            SetColor(leftButton, shopExplorer.colorInactive);
+            SetColor(rightButton, shopExplorer.colorInactive);
         }
     }
 

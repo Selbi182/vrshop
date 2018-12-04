@@ -117,7 +117,6 @@ public class LaserPointer : MonoBehaviour {
 
     private void LateUpdate() {
         if (targetObjectThisFrame != null) {
-
             // To prevent race conditions
             if (targetObject != null) {
                 ClearTarget();
@@ -144,9 +143,9 @@ public class LaserPointer : MonoBehaviour {
                 o.enabled = true;
 
             }
-            closestTargetObjectThisFrameDistance = float.MaxValue;
-            targetObjectThisFrame = null;
         }
+        closestTargetObjectThisFrameDistance = float.MaxValue;
+        targetObjectThisFrame = null;
     }
 
     private void SetLaserColor(Color color) {

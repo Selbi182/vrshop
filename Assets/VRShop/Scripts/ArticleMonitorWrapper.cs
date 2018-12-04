@@ -26,7 +26,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
 
     public IList<GameObject> allChildren;
 
-
+    private ShopExplorerBehavior shopExplorer;
     private const string COLOR_OBJECT = "Color";
     private const string FRONT_OBJECT = "Front";
     private const string BACK_OBJECT  = "Back";
@@ -59,6 +59,8 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     private Vector3 imgScaleBack;
 
     void Awake() {
+        shopExplorer = transform.parent.GetComponent<ShopExplorerBehavior>();
+
         // Find all the objects from the children
         colorObject = transform.Find(COLOR_OBJECT).gameObject;
 
@@ -91,7 +93,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         return Color.black;
     }
 
-    public void SetMonitorColor(Color color) {
+    private void SetMonitorColor(Color color) {
         if (colorObject != null) {
             colorObject.GetComponent<Renderer>().material.SetColor(TINT_COLOR, color);
         }
@@ -169,6 +171,15 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         }
     }
 
+    private void UpdateColor() {
+        // Visually indicate whether the article has a model (the absence of a scale factor implies that, even if it isn't 100% accurate)
+        if (assignedArticle.ScaleFactor != null) {
+            SetMonitorColor(shopExplorer.colorActive);
+        } else {
+            SetMonitorColor(shopExplorer.colorInactive);
+        }
+    }
+
     public void SetArticle(VRShopArticle article) {
         if (article == assignedArticle) {
             return;
@@ -185,6 +196,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         UpdatePrice();
         UpdateDescription();
         UpdateImage();
+        UpdateColor();
     }
 
     public VRShopArticle GetArticle() {
@@ -203,7 +215,7 @@ public class ArticleMonitorWrapper : MonoBehaviour {
                 }
             }
         } else if (targetObject = cartAddToCartObjectBack) {
-            SendMessageUpwards("AddToCart", cartQuanity);
+            shopExplorer.AddToCart(cartQuanity);
         }
 
         UpdatePrice();

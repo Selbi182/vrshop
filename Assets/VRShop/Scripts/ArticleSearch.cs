@@ -8,6 +8,7 @@ using TMPro;
 
 public class ArticleSearch : MonoBehaviour {
 
+    public string debugTriggerWord = "alles";
     public bool isWaitingForInput;
     public GameObject headsetMicrophone;
     private MicrophoneRecorder microphoneRecorder;
@@ -54,22 +55,7 @@ public class ArticleSearch : MonoBehaviour {
 
         if (searchString.Length > 0) {
             isWaitingForInput = false;
-
-            IList<VRShopArticle> searchResultArticles = VRShopDBConnector.SearchForArticle(searchString);
-            OfferResults(searchResultArticles);
-
-
-            int resultsCount = searchResultArticles.Count;
-            string resultText = string.Format("{0} Suchergebnisse", resultsCount);
-
-            if (resultsCount == 1) {
-                resultText = string.Format("{0} Suchergebniss", resultsCount);
-            }
-
-            string formatted = string.Format("({0}) {1}", resultText, searchString);
-
-            ResetSearch();
-            UpdateMeshText(formatted);
+            PerformSearch(searchString);
         }
     }
 
@@ -116,12 +102,31 @@ public class ArticleSearch : MonoBehaviour {
         return;
     }
 
-    private void PerformSearch(string searchString) {
-        IList<VRShopArticle> searchResultArticles = VRShopDBConnector.SearchForArticle(searchString);
-        if (searchResultArticles != null && searchResultArticles.Count > 0) {
-            OfferResults(searchResultArticles);
+    private void PerformSearch(string search) {
+        bool isDebug = debugTriggerWord.Length > 0 && search.Contains(debugTriggerWord);
+        if (isDebug) {
+            // Debug: "a" is contained in every search, and is used to easily load all available data from the database
+            search = "a";
         }
+
+        List<VRShopArticle> searchResultArticles = VRShopDBConnector.SearchForArticle(search);
+        if (isDebug) {
+            // Debug: Duplicate the search results four times to test the rotating cylinder, as there aren't enough articles in the database
+            searchResultArticles.AddRange(searchResultArticles);
+            searchResultArticles.AddRange(searchResultArticles);
+        }
+
+        OfferResults(searchResultArticles);
+
+        int resultsCount = searchResultArticles.Count;
+        string resultText = string.Format("{0} Suchergebnisse", resultsCount);
+        if (resultsCount == 1) {
+            resultText = string.Format("{0} Suchergebniss", resultsCount);
+        }
+        string formatted = string.Format("({0}) {1}", resultText, search);
+
         ResetSearch();
+        UpdateMeshText(formatted);
     }
 
     private void UpdateMeshText(string s) {

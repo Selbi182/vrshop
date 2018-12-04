@@ -49,6 +49,9 @@ public class ShopExplorerBehavior : MonoBehaviour {
     private const float EPSILON = 0.01f;
     private const float BOUNDARY_DEGREE = 45f;
 
+    public Color colorActive;
+    public Color colorInactive;
+
     // Used for transparency
     private const string SCREEN_SELECTABLE = "LaserTarget";
     private const string SCREEN_NOTSELECTABLE = "Untagged";
@@ -153,9 +156,14 @@ public class ShopExplorerBehavior : MonoBehaviour {
             // If the screen is behind the user, steadily increase the transparency
             float sin = Mathf.Sin(radian);
             if (sin < -EPSILON) {
-                screen.tag = SCREEN_NOTSELECTABLE;
                 float newAlpha = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
-                screen.SetActive(newAlpha > 0f);
+                if (newAlpha > 0f) {
+                    screen.SetActive(true);
+                    screen.tag = SCREEN_SELECTABLE;
+                } else {
+                    screen.SetActive(false);
+                    screen.tag = SCREEN_NOTSELECTABLE;
+                }
             } else {
                 screen.tag = SCREEN_SELECTABLE;
             }
@@ -266,7 +274,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
         }
     }
     
-
     private Direction CurrentSwipeDirection() {
         if (offsetChangeThisFrame < 0f) {
             return Direction.LEFT;
@@ -314,11 +321,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
         }
     }
     
-    private void SetMonitorColor(GameObject monitor, Color color) {
-        monitor.GetComponent<ArticleMonitorWrapper>().SetMonitorColor(color);
-    }
-
-
     public void ReceiveSearchResutls(IList<VRShopArticle> searchResultArticles) {
         articles = searchResultArticles;
 

@@ -489,7 +489,7 @@ namespace AsImpL
                         case "map_kA":
                             if (!string.IsNullOrEmpty(parameters))
                             {
-                                Debug.Log("Map not supported:" + line);
+                                //Debug.Log("Map not supported:" + line);
                             }
                             break;
                         default:

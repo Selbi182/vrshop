@@ -7,6 +7,7 @@ using System;
 
 public class ShopItemSpawner : MonoBehaviour {
 
+    public bool isImporting;
     public GameObject spawnedObject;
     public GameObject spawnLocation;
     public float noGravityRotationSpeed = 1f;
@@ -15,11 +16,67 @@ public class ShopItemSpawner : MonoBehaviour {
     public ImportOptions importOptions;
     private const string OBJ_PATTERN = "*.obj";
 
-    private Dictionary<string, GameObject> importedModels;
+    private Dictionary<string, GameObject> importedModelsCache;
+
+    private VRShopArticle article;
+    private string articleModelPath;
 
     void Awake() {
+        isImporting = false;
+        importedModelsCache = new Dictionary<string, GameObject>();
+
         objImporter = gameObject.AddComponent<ObjectImporter>();
-        importedModels = new Dictionary<string, GameObject>();
+
+        // Gets called when the model has been imported
+        objImporter.ImportedModel += (importedGameObject, path) => {
+            GameObject g;
+            try {
+                g = importedGameObject.GetComponentInChildren<MeshRenderer>().gameObject;
+            } catch (NullReferenceException) {
+                g = importedGameObject;
+            }
+
+            // Set initial locations and meta data
+            Transform t = g.transform;
+            t.parent = spawnLocation.transform;
+            t.localPosition = Vector3.zero;
+            t.rotation = Quaternion.identity;
+            t.name = string.Format("({0}) {1}", article.Id.ToString(), article.Name);
+
+            // Scale the object
+            float scaleFactor = (float)article.ScaleFactor;
+            t.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
+
+            // Remove all other Collider components first, just in case any are loaded
+            foreach (Collider c in g.GetComponentsInChildren<Collider>()) {
+                DestroyImmediate(c, true);
+            }
+
+            // Add a generic BoxCollider (MeshColliders would be more accurate, but they're really expensive on complex models with lots of faces)
+            g.AddComponent<BoxCollider>();
+
+            // Add a Rigidbody, but don't enable gravity yet
+            Rigidbody r = g.AddComponent<Rigidbody>();
+            r.useGravity = false;
+            r.isKinematic = !r.useGravity;
+
+            // Draw particles
+            spawnLocation.SetActive(true);
+
+            // Cache the spawned object
+            spawnedObject = g;
+            GameObject cachedModel = Instantiate(g, transform);
+            cachedModel.SetActive(false);
+            cachedModel.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            importedModelsCache[articleModelPath] = cachedModel;
+
+            // Destroy the container, if unequal
+            if (importedGameObject != g) {
+                Destroy(importedGameObject);
+            }
+
+            isImporting = false;
+        };
     }
 
     void FixedUpdate() {
@@ -29,18 +86,25 @@ public class ShopItemSpawner : MonoBehaviour {
     }
 
     public void ImportAndSpawnShopItem(VRShopArticle selectedArticle) {
+        if (isImporting) {
+            Debug.LogWarning("Cannot import another model while model importing is still in progress!");
+            return;
+        }
+
         // Only spawn objects where a model is available
-        string articleModelPath = GetModelPath(selectedArticle);
+        article = selectedArticle;
+        articleModelPath = GetModelPath(article);
         if (articleModelPath == null) {
             return;
         }
 
         // Remove the previously spawned object if it hasn't been picked up yet
         DestroyHoveringObject();
-
+        
         // Reload cached objects
-        if (importedModels.ContainsKey(articleModelPath)) {
-            GameObject g = Instantiate(importedModels[articleModelPath], spawnLocation.transform);
+        if (importedModelsCache.ContainsKey(articleModelPath) && importedModelsCache[articleModelPath] != null) {
+            GameObject g = Instantiate(importedModelsCache[articleModelPath], spawnLocation.transform);
+            g.SetActive(true);
 
             // Set initial locations and meta data
             Transform t = g.transform;
@@ -54,135 +118,29 @@ public class ShopItemSpawner : MonoBehaviour {
 
             spawnLocation.SetActive(true);
             spawnedObject = g;
+
+            isImporting = false;
             return;
         }
         
         // Import the Model
         string spawnedGameObjectName = selectedArticle.Name;
         objImporter.ImportModelAsync(spawnedGameObjectName, articleModelPath, transform, importOptions);
-
-        // Gets called when the model has been imported
-        objImporter.ImportedModel += (importedGameObject, path) => {
-            GameObject g;
-            try {
-                g = importedGameObject.GetComponentInChildren<MeshRenderer>().gameObject;
-            } catch(NullReferenceException) {
-                g = importedGameObject;
-            }
-
-            // Set initial locations and meta data
-            Transform t = g.transform;
-            t.parent = spawnLocation.transform;
-            t.localPosition = Vector3.zero;
-            t.rotation = Quaternion.identity;
-            t.name = selectedArticle.Id.ToString();
-
-            // Scale the object
-            float scaleFactor = (float)selectedArticle.ScaleFactor;
-            t.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
-
-            // Remove all other Collider components first, just in case any are loaded
-            foreach (Collider c in g.GetComponentsInChildren<Collider>()) {
-                DestroyImmediate(c, true);
-            }
-
-            // Add a generic BoxCollider (MeshColliders would be more accurate, but they're really expensive on complex models with lots of faces)
-            g.AddComponent<BoxCollider>();
-            
-            // Add a Rigidbody, but don't enable gravity yet
-            Rigidbody r = g.AddComponent<Rigidbody>();
-            r.useGravity = false;
-            r.isKinematic = !r.useGravity;
-
-            // Draw particles
-            spawnLocation.SetActive(true);
-
-            // Remember the spawned object
-            spawnedObject = g;
-            importedModels[articleModelPath] = g;
-
-            // Destroy the container, if unequal
-            if (importedGameObject != g) {
-                Destroy(importedGameObject);
-            }
-        };
     }
 
-    [Obsolete("Use ImportAndSpawnShopItem() instead")]
-    public void SpawnShopItem(VRShopArticle selectedArticle) {
-        // Only spawn objects where a model is available
-        string assetBundlePath = GetModelPath(selectedArticle);
-        if (assetBundlePath == null) {
-            return;
+    public static void SendToTrashcan(GameObject g) {
+        if (g != null) {
+            Destroy(g);
         }
-
-        // Remove the previously spawned object if it hasn't been picked up yet
-        DestroyHoveringObject();
-
-        // Fetch the asset bundle from the path
-        AssetBundle ab = AssetBundle.LoadFromFile(assetBundlePath);
-
-        // Get all enclosed assets of the bundle and make sure the number of containing assets is EXACTLY 1
-        string[] assets = ab.GetAllAssetNames();
-        if (ab == null || assets.Length != 1) {
-            return;
-        }
-
-        // Instantiate the object (imply that the first entry in the asset bundle is the only one)
-        foreach (string s in assets) {
-            // Load the asset
-            GameObject g = ab.LoadAsset(s) as GameObject;
-
-            // Find the GameObject that contains the MeshRenderer and spawn that
-            GameObject articleSpawnObject = g.GetComponentInChildren<MeshRenderer>().gameObject;
-            g = Instantiate(articleSpawnObject);
-
-            // Set initial locations and meta data
-            Transform t = g.transform;
-            t.parent = transform;
-            t.localPosition = spawnLocation.transform.position;
-            t.rotation = Quaternion.identity;
-            t.name = selectedArticle.Name;
-
-            // Scale the object
-            float scaleFactor = (float)selectedArticle.ScaleFactor;
-            t.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
-
-            // Remove all other Collider components first, just in case any are loaded
-            foreach (Collider c in g.GetComponentsInChildren<Collider>()) {
-                DestroyImmediate(c, true);
-            }
-
-            // Add a generic BoxCollider (MeshColliders would be more accurate, but they're really expensive on complex models with lots of faces)
-            g.AddComponent<BoxCollider>();
-
-            // Add a MeshCollider to this object with reduced polycount
-            //MeshCollider mc = asset.AddComponent<MeshCollider>();
-            //mc.cookingOptions = MeshColliderCookingOptions.InflateConvexMesh | mc.cookingOptions;
-            //mc.convex = true;
-
-            // Add a Rigidbody, but don't enable gravity yet
-            Rigidbody r = g.AddComponent<Rigidbody>();
-            r.useGravity = false;
-            r.isKinematic = !r.useGravity;
-
-            // Draw particles
-            spawnLocation.SetActive(true);
-
-            // Remember the spawned object
-            spawnedObject = g;
-        }
-
-        // Unload AssetBundle after everything is done to free memory
-        ab.Unload(false);
     }
 
     public void DestroyHoveringObject() {
         if (spawnedObject != null) {
             UnsetParticles();
-
-            // Delete the potential previous object occupying the spawn slot
-            Destroy(spawnedObject);
+            
+            // Cache the potential previous object occupying the spawn slot
+            SendToTrashcan(spawnedObject);
+            spawnedObject = null;
         }
     }
 
@@ -213,7 +171,7 @@ public class ShopItemSpawner : MonoBehaviour {
 
         // Otherwise, check for the actual existance of a model based on the ID and return the path
         string id = a.Id.ToString();
-        string articleModelFolder = Path.Combine(Path.Combine(Application.dataPath, VRShopDBConnector.ARTICLE_PATH), id);
+        string articleModelFolder = Path.Combine(VRShopDBConnector.ARTICLE_FOLDER_PATH, id);
 
         // Find the .obj file in this folder corresponding to the model
         // For consistency's sake, there should always only be one result in the above search
