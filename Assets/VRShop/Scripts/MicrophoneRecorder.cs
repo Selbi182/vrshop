@@ -34,19 +34,19 @@ public class MicrophoneRecorder : MonoBehaviour {
         // Don't allow more than one instance
         bool isOkayToRecord = true;
         if (Microphone.devices.Length < 1) {
-            Debug.LogWarning("No microphone found!");
+            Debug.LogError("No microphone found!");
             isOkayToRecord = false;
         }
         if (audioListener == null) {
-            Debug.LogWarning("No audio listener found!");
+            Debug.LogError("No audio listener found!");
             isOkayToRecord = false;
         }
         if (dictationRecognizer == null) {
-            Debug.LogWarning("No dictation recognizer found!");
+            Debug.LogError("No dictation recognizer found!");
             isOkayToRecord = false;
         }
         if (dictationRecognizer != null && dictationRecognizer.Status.Equals(SpeechSystemStatus.Running)) {
-            //Debug.LogWarning("Dictation recognizer is already in use!");
+            Debug.LogWarning("Dictation recognizer is already in use!");
             isOkayToRecord = false;
         }
 
@@ -59,7 +59,6 @@ public class MicrophoneRecorder : MonoBehaviour {
 
     private DictationRecognizer InstantiateDictationRecognizer() {
         DictationRecognizer dict = new DictationRecognizer();
-        dict.InitialSilenceTimeoutSeconds = 2f;
 
         // Dictation result after a couple seconds of silence
         dict.DictationResult += (text, confidence) => {
@@ -76,6 +75,12 @@ public class MicrophoneRecorder : MonoBehaviour {
             if (completionCause != DictationCompletionCause.Complete) {
                 Debug.LogWarningFormat("Dictation completed unsuccessfully: {0}", completionCause);
             }
+        };
+
+        // Gets called on explicit errors
+        // Also falls back to this block when SPERR_SPEECH_PRIVACY_POLICY_NOT_ACCEPTED is thrown
+        dict.DictationError += (error, hresult) => {
+            Debug.LogErrorFormat("Dictation error: {0}; HResult = {1}.", error, hresult);
         };
 
         return dict;

@@ -40,7 +40,9 @@ public class LaserPointer : MonoBehaviour {
         if (shopExplorer != null) {
             explorer = shopExplorer.GetComponent<ShopExplorerBehavior>();
         }
-	}
+
+        StartSearch();
+    }
 
     void Update() {
         // Check if the controller is hovering over an object
@@ -88,12 +90,7 @@ public class LaserPointer : MonoBehaviour {
     }
 
     private void StartSearch() {
-        // Handle the search button
-        GameObject textBox = searchButton.transform.parent.transform.Find("SearchHandlerTextBox").gameObject;
-        textBox.SetActive(true);
-        textBox.GetComponent<ArticleSearch>().EnableListener();
-        explorer.SelectScreen(textBox);
-
+        searchButton.transform.parent.GetComponent<SearchStart>().StartSearch();
         SendMessage("HapticPulseDoLerp", 1f / 30f);
     }
 

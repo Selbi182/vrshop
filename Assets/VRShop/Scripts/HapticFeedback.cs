@@ -8,7 +8,14 @@ public class HapticFeedback : MonoBehaviour {
     private const int MAX_PULSE = 3999;
     private const float EPSILON = 0.01f;
 
-    private SteamVR_Controller.Device Controller { get { return SteamVR_Controller.Input((int)trackedObj.index); } }
+    private SteamVR_Controller.Device Controller {
+        get {
+            if (trackedObj != null) {
+                return SteamVR_Controller.Input((int)trackedObj.index);
+            }
+            return null;
+        }
+    }
     private SteamVR_TrackedObject trackedObj;
 
     private float lerp;
@@ -36,8 +43,10 @@ public class HapticFeedback : MonoBehaviour {
         // Calculate power based on factor 0.0..1.0
         ushort pulseForce = Convert.ToUInt16(Mathf.Min(MAX_PULSE * inBounds, MAX_PULSE) * 0.2f);
 
-        // Send calculated pulse force to controller for this frame
-        Controller.TriggerHapticPulse(pulseForce);
+        if (Controller != null) {
+            // Send calculated pulse force to controller for this frame
+            Controller.TriggerHapticPulse(pulseForce);
+        }
     }
 
     // For a steadily decaying haptic pulse over the next few frames

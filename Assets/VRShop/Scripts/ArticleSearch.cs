@@ -8,12 +8,23 @@ using TMPro;
 
 public class ArticleSearch : MonoBehaviour {
 
+    private const string DEFAULT_TEXT = "Zur Suche ins Mikrofon sprechen...";
+    private const string MICROPHONE_ERROR_TEXT = "Fehler bei der Spracherkennung! Bitte Tastatur verwenden...";
+
     public string debugTriggerWord = "alles";
     public bool isWaitingForInput;
     public GameObject headsetMicrophone;
     private MicrophoneRecorder microphoneRecorder;
 
     private TextMeshPro textMesh;
+
+    public Color colorVoiceSearchActive;
+    public Color colorVoiceSearchInactive;
+    public Color colorSearchComplete;
+    public Color colorSearchError;
+    private Material textBoxMaterial;
+    private Color _setColor;
+    private readonly static string TINT_COLOR = "_TintColor";
 
     private string searchString;
 
@@ -28,11 +39,11 @@ public class ArticleSearch : MonoBehaviour {
     }
     private string _tmpSearchString;
 
-    private const string DEFAULT_TEXT = "Speak to search for articles...";
 
     public void EnableListener() {
         isWaitingForInput = true;
         microphoneRecorder.StartSpeechToText();
+        SetColor(colorVoiceSearchActive);
     }
 
     void Awake () {
@@ -41,6 +52,7 @@ public class ArticleSearch : MonoBehaviour {
         if (headsetMicrophone != null) {
             microphoneRecorder = headsetMicrophone.GetComponent<MicrophoneRecorder>();
         }
+        textBoxMaterial = transform.Find("SearchBox").GetComponent<Renderer>().material;
 
         // Initialize the search
         ResetSearch();
@@ -53,7 +65,9 @@ public class ArticleSearch : MonoBehaviour {
             VoiceSearch();
         }
 
+        // Gets called when the search string has been set, meaning that the search can be initiated
         if (searchString.Length > 0) {
+            SetColor(colorSearchComplete);
             isWaitingForInput = false;
             PerformSearch(searchString);
         }
@@ -86,7 +100,7 @@ public class ArticleSearch : MonoBehaviour {
     }
 
     private void VoiceSearch() {
-        if (microphoneRecorder != null) {
+        if (microphoneRecorder != null && microphoneRecorder.isRunning) {
             // Poll for any dictation results and assign the search string on success
             string dictationResult = microphoneRecorder.DictationResult();
             if (dictationResult != null) {
@@ -97,6 +111,13 @@ public class ArticleSearch : MonoBehaviour {
                 if (hypothesisResult != null) {
                     LiveSearchString = hypothesisResult;
                 }
+            }
+            if (SetColor(colorVoiceSearchActive) && LiveSearchString.Length == 0) {
+                UpdateMeshText(DEFAULT_TEXT);
+            }
+        } else {
+            if (SetColor(colorVoiceSearchInactive) && LiveSearchString.Length == 0) {
+                UpdateMeshText(MICROPHONE_ERROR_TEXT);
             }
         }
         return;
@@ -127,6 +148,9 @@ public class ArticleSearch : MonoBehaviour {
 
         ResetSearch();
         UpdateMeshText(formatted);
+        if (resultsCount == 0) {
+            SetColor(colorSearchError);
+        }
     }
 
     private void UpdateMeshText(string s) {
@@ -143,5 +167,14 @@ public class ArticleSearch : MonoBehaviour {
     public void OfferResults(IList<VRShopArticle> articles) {
         // Notify the ShopExplorer that new articles have been found
         SendMessageUpwards("ReceiveSearchResutls", articles);
+    }
+
+    private bool SetColor(Color color) {
+        if (!color.Equals(_setColor)) {
+            textBoxMaterial.SetColor(TINT_COLOR, color);
+            _setColor = color;
+            return true;
+        }
+        return false;
     }
 }
