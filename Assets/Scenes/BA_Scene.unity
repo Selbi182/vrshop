@@ -152,156 +152,19 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 33301169029276856, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 1699520879}
     - target: {fileID: 23333887840695564, guid: dff34a03877102344b7b9ec6f1c79423,
         type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 1706870096}
-    - target: {fileID: 114836162762136376, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: m_text
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 114836162762136376, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: m_havePropertiesChanged
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114836162762136376, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: m_isInputParsingRequired
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114699467975141490, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: searchTextBox
-      value: 
-      objectReference: {fileID: 574977130}
-    - target: {fileID: 114342094261793816, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: searchTextBox
-      value: 
-      objectReference: {fileID: 574977130}
-    - target: {fileID: 33153908110847080, guid: dff34a03877102344b7b9ec6f1c79423,
+    - target: {fileID: 33301169029276856, guid: dff34a03877102344b7b9ec6f1c79423,
         type: 2}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1404769438730038, guid: dff34a03877102344b7b9ec6f1c79423, type: 2}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchComplete.r
-      value: 0.13725491
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchComplete.g
-      value: 0.6509804
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchComplete.b
-      value: 0.7882353
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchComplete.a
-      value: 0.5019608
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchActive.r
-      value: 0.13725491
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchActive.g
-      value: 0.7882353
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchActive.b
-      value: 0.13906989
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchActive.a
-      value: 0.5019608
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchError.r
-      value: 0.8679245
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchError.g
-      value: 0.13510147
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchError.b
-      value: 0.13510147
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorSearchError.a
-      value: 0.5019608
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchInactive.r
-      value: 0.7882353
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchInactive.g
-      value: 0.5529412
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchInactive.b
-      value: 0.13725491
-      objectReference: {fileID: 0}
-    - target: {fileID: 114607317800874846, guid: dff34a03877102344b7b9ec6f1c79423,
-        type: 2}
-      propertyPath: colorVoiceSearchInactive.a
-      value: 0.5019608
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1699520879}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dff34a03877102344b7b9ec6f1c79423, type: 2}
   m_IsPrefabAsset: 0
---- !u!1 &574977130 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1404769438730038, guid: dff34a03877102344b7b9ec6f1c79423,
-    type: 2}
-  m_PrefabInternal: {fileID: 271575213}
---- !u!1 &1508201416 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1938042515023882, guid: dff34a03877102344b7b9ec6f1c79423,
-    type: 2}
-  m_PrefabInternal: {fileID: 271575213}
---- !u!114 &1508201418
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1508201416}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db6cfc8e12f20b142b901d12a432b6e2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  searchTextBox: {fileID: 574977130}
-  start: 0
 --- !u!43 &1699520879
 Mesh:
   m_ObjectHideFlags: 0
