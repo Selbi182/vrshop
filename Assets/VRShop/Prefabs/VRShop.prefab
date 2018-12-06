@@ -686,6 +686,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4070782751291340}
+  - component: {fileID: 114748114438795094}
   m_Layer: 0
   m_Name: Search
   m_TagString: Untagged
@@ -2948,6 +2949,10 @@ MonoBehaviour:
   debugTriggerWord: alles
   isWaitingForInput: 1
   headsetMicrophone: {fileID: 1248635929272632}
+  colorVoiceSearchActive: {r: 0.13725491, g: 0.7882353, b: 0.13906989, a: 0.5019608}
+  colorVoiceSearchInactive: {r: 0.7882353, g: 0.5529412, b: 0.13725491, a: 0.5019608}
+  colorSearchComplete: {r: 0.13725491, g: 0.6509804, b: 0.7882353, a: 0.5019608}
+  colorSearchError: {r: 0.8679245, g: 0.13510147, b: 0.13510147, a: 0.5019608}
 --- !u!114 &114611449961675010
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3025,6 +3030,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   index: -1
   origin: {fileID: 0}
+--- !u!114 &114748114438795094
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1938042515023882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db6cfc8e12f20b142b901d12a432b6e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  searchTextBox: {fileID: 1404769438730038}
+  start: 0
 --- !u!114 &114760899490601514
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3084,7 +3102,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: Speak to search...
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3160,11 +3178,11 @@ MonoBehaviour:
     lineCount: 1
     pageCount: 1
     materialCount: 1
-  m_havePropertiesChanged: 0
+  m_havePropertiesChanged: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 0
+  m_isInputParsingRequired: 1
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 23228270542422806}
