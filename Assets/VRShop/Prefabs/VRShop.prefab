@@ -2527,7 +2527,7 @@ TextMesh:
   m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
   m_Color:
     serializedVersion: 2
-    rgba: 4286230510
+    rgba: 4291405347
 --- !u!102 &102821884882721812
 TextMesh:
   serializedVersion: 3
@@ -2569,7 +2569,7 @@ TextMesh:
   m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
   m_Color:
     serializedVersion: 2
-    rgba: 4286230510
+    rgba: 4291405347
 --- !u!108 &108453387746369302
 Light:
   m_ObjectHideFlags: 1
@@ -2799,8 +2799,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 0, g: 1, b: 0.5, a: 0.5019608}
+  outlineMode: 1
+  outlineColor: {r: 0.92156863, g: 0.35686275, b: 0.14509805, a: 0.5019608}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
@@ -3207,8 +3207,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 0, g: 1, b: 0.5, a: 0.5019608}
+  outlineMode: 1
+  outlineColor: {r: 0.92156863, g: 0.35686275, b: 0.14509805, a: 0.5019608}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []

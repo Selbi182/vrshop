@@ -40,8 +40,6 @@ public class LaserPointer : MonoBehaviour {
         if (shopExplorer != null) {
             explorer = shopExplorer.GetComponent<ShopExplorerBehavior>();
         }
-
-        StartSearch();
     }
 
     void Update() {
