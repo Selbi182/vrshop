@@ -25,7 +25,7 @@ public class ScrollVisualizerHandler : MonoBehaviour {
         if (shopExplorer.numberOfArticles > 0) {
             // Change the position of the marker according to the range 0..maximumOffset where actualOffset is the defining position at this frame's moment
             float actualOffset = shopExplorer.actualOffset;
-            float maximumOffset = shopExplorer.maximumOffset;
+            float maximumOffset = Mathf.Max(shopExplorer.maximumOffset, float.Epsilon);
             float translatedMarkerPosition = ((actualOffset / maximumOffset) * markerBoxScale) - (markerBoxScale / 2f);
 
             // Apply the new position

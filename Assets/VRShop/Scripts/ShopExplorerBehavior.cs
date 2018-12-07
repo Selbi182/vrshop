@@ -108,7 +108,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
         swipeDirection = CurrentSwipeDirection();
 
         // Calculate the maximum scroll offset based on the current number of articles
-        maximumOffset = 360f * ((float)numberOfArticles / (float)screenCount);
+        maximumOffset = Math.Max(0f, 360f * ((float)numberOfArticles / (float)screenCount) - spacingX);
 
         // Boundary scrolling
         actualOffset += offsetChangeThisFrame;
@@ -130,7 +130,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
             // Fetch the mandatory information about the current monitor
             GameObject screen = screens[i];
             ArticleMonitorWrapper wrapper = screen.GetComponent<ArticleMonitorWrapper>();
-
 
             // Update the screen's positon using simple trigenometry scaled over the frame counter.
             // As a result, the screen will circle around the player (specifically, the position of ShopExplorer).
@@ -155,20 +154,15 @@ public class ShopExplorerBehavior : MonoBehaviour {
             // If the article ordinal in the wall of the screen is greater than the number of available articles, hide it
             // If the screen is behind the user, steadily increase the transparency
             float sin = Mathf.Sin(radian);
-            if (sin < -EPSILON) {
-                float newAlpha = Mathf.Max(0.5f - (Mathf.Abs(sin)), 0f);
-                if (newAlpha > 0f) {
-                    screen.SetActive(true);
-                    screen.tag = SCREEN_SELECTABLE;
-                } else {
-                    screen.SetActive(false);
-                    screen.tag = SCREEN_NOTSELECTABLE;
-                }
-            } else {
+            if (sin > -EPSILON) {
+                screen.SetActive(true);
                 screen.tag = SCREEN_SELECTABLE;
+            } else {
+                screen.SetActive(false);
+                screen.tag = SCREEN_NOTSELECTABLE;
             }
 
-            // Invisible loading zone behind the user (which is approaching sine 1.00)
+            // Invisible loading zone behind the user (which is approaching sin 1.00)
             if (sin - EPSILON < -1f && (pos.x * previousX) < 0f) {
                 // Get the base index
                 switch (swipeDirection) {
@@ -336,7 +330,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
         // Update number of shown articles (cap it at the max number of possible screens)
         for (int i = 0; i < Math.Min(numberOfArticles, screenCount); i++) {
-            screens[i].SetActive(true);
+            //screens[i].SetActive(true);
             screens[i].GetComponent<ArticleMonitorWrapper>().articleLoadIndexId = i;
         }
     }

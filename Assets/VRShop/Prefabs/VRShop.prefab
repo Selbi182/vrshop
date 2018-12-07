@@ -2964,7 +2964,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5beb12c7cb5377d4a9384ec70e99ac1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfArticles: 100
+  numberOfArticles: 0
   articleLoadOffset: 0
   screenCount: 36
   screensPerColumn: 2
@@ -2983,8 +2983,8 @@ MonoBehaviour:
   swipeDirection: 0
   offsetChangeThisFrame: 0
   actualOffset: 0
-  maximumOffset: 600
-  maximumScrollSpeed: 2
+  maximumOffset: 0
+  maximumScrollSpeed: 3
   colorActive: {r: 0.376465, g: 0.6063015, b: 0.731, a: 0.8921569}
   colorInactive: {r: 0.22352941, g: 0.3137255, b: 0.32941177, a: 0.5019608}
 --- !u!114 &114639458976171684
