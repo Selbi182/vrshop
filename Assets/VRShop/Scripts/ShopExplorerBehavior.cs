@@ -31,8 +31,8 @@ public class ShopExplorerBehavior : MonoBehaviour {
     public GameObject backwardLoadTrigger;
 
     public float selectionSpeed;
-    private GameObject selectedScreen;
-    private GameObject expandedScreen;
+    public GameObject selectedScreen;
+    public GameObject expandedScreen;
     private VRShopArticle selectedArticle;
 
     // Used for swiping
@@ -151,15 +151,17 @@ public class ShopExplorerBehavior : MonoBehaviour {
             screen.transform.localPosition = pos;
             OrientateScreen(screen);
 
-            // If the article ordinal in the wall of the screen is greater than the number of available articles, hide it
-            // If the screen is behind the user, steadily increase the transparency
+            // Hide selected articles
+            // Hide articles behind the user
             float sin = Mathf.Sin(radian);
-            if (sin > -EPSILON) {
-                screen.SetActive(true);
-                screen.tag = SCREEN_SELECTABLE;
+            if (screen == selectedScreen && wrapper.GetArticle() == selectedArticle) {
+                ShowScreen(screen, false);
             } else {
-                screen.SetActive(false);
-                screen.tag = SCREEN_NOTSELECTABLE;
+                if (sin > -EPSILON) {
+                    ShowScreen(screen, true);
+                } else {
+                    ShowScreen(screen, false);
+                }
             }
 
             // Invisible loading zone behind the user (which is approaching sin 1.00)
@@ -195,7 +197,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
             // Hide this monitor if it exceeds the maximum number of articles and all following ones
             if (wrapper.articleLoadIndexId + 1 > articles.Count || wrapper.articleLoadIndexId < 0) {
-                screen.SetActive(false);
+                ShowScreen(screen, false);
                 continue;
             }
 
@@ -207,7 +209,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
         // Cosmetic change to hide article monitors at the boundaries of the wall
         if (actualOffset < BOUNDARY_DEGREE) {
             for (int i = screenCount - (screensPerColumn * 2); i < screenCount; i++) {
-                screens[i].SetActive(false);
+                ShowScreen(screens[i], false);
             }
         }
 
@@ -254,7 +256,17 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
         // Rememeber the selected screen
         selectedScreen = screen;
-        screen.SetActive(false);
+        ShowScreen(screen, false);
+    }
+
+    private void ShowScreen(GameObject screen, bool show) {
+        if (show) {
+            screen.SetActive(true);
+            screen.tag = SCREEN_SELECTABLE;
+        } else {
+            screen.SetActive(false);
+            screen.tag = SCREEN_NOTSELECTABLE;
+        }
     }
 
     public void UnselectScreen() {
@@ -262,7 +274,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
             spawner.DestroyHoveringObject();
             Destroy(expandedScreen);
             if (isArticleMonitor) {
-                selectedScreen.SetActive(true);
+                ShowScreen(selectedScreen, true);
                 selectedArticle = null;
             }
         }
@@ -330,7 +342,6 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
         // Update number of shown articles (cap it at the max number of possible screens)
         for (int i = 0; i < Math.Min(numberOfArticles, screenCount); i++) {
-            //screens[i].SetActive(true);
             screens[i].GetComponent<ArticleMonitorWrapper>().articleLoadIndexId = i;
         }
     }
