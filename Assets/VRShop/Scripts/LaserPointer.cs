@@ -68,11 +68,8 @@ public class LaserPointer : MonoBehaviour {
                         targetObject.SendMessageUpwards("HandleCartSelection", targetObject);
                         SendMessage("HapticPulseDo", 0.5f);
                     } else {
-                        // Send the information that an article screen has been selected for preview
-                        explorer.SelectScreen(targetObject);
-
-                        // Spawn shop item (just delegate the selected monitor to the method and let it do the actual logic)
-                        explorer.SpawnShopItem(targetObject);
+                        // Send the command that an article screen has been selected for preview
+                        gameObject.GetComponent<ArticleMonitorWrapper>().Select();
                         SendMessage("HapticPulseDoLerp", 1f / 30f);
                     }
                 }

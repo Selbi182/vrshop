@@ -10,6 +10,7 @@ public class ShopItemSpawner : MonoBehaviour {
     public bool isImporting;
     public GameObject spawnedObject;
     public GameObject spawnLocation;
+    public GameObject loadingAnimation;
     public float noGravityRotationSpeed = 1f;
 
     private ObjectImporter objImporter;
@@ -61,6 +62,7 @@ public class ShopItemSpawner : MonoBehaviour {
             r.isKinematic = !r.useGravity;
 
             // Draw particles
+            loadingAnimation.SetActive(false);
             spawnLocation.SetActive(true);
 
             // Cache the spawned object
@@ -122,7 +124,10 @@ public class ShopItemSpawner : MonoBehaviour {
             isImporting = false;
             return;
         }
-        
+
+        // Enable the loading animation
+        loadingAnimation.SetActive(true);
+
         // Import the Model
         string spawnedGameObjectName = selectedArticle.Name;
         objImporter.ImportModelAsync(spawnedGameObjectName, articleModelPath, transform, importOptions);
@@ -161,6 +166,7 @@ public class ShopItemSpawner : MonoBehaviour {
 
     private void UnsetParticles() {
         spawnLocation.SetActive(false);
+        loadingAnimation.SetActive(false);
     }
 
     private string GetModelPath(VRShopArticle a) {

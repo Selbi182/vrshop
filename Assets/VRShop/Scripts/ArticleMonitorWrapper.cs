@@ -6,6 +6,7 @@ using TMPro;
 
 public class ArticleMonitorWrapper : MonoBehaviour {
 
+    public bool selectScreen;
     public GameObject colorObject;
 
     public GameObject frontObject;
@@ -59,6 +60,8 @@ public class ArticleMonitorWrapper : MonoBehaviour {
     private Vector3 imgScaleBack;
 
     void Awake() {
+        selectScreen = false;
+
         shopExplorer = transform.parent.GetComponent<ShopExplorerBehavior>();
 
         // Find all the objects from the children
@@ -84,6 +87,22 @@ public class ArticleMonitorWrapper : MonoBehaviour {
         defaultTexture = imageObjectFront.GetComponent<Renderer>().material.mainTexture;
         imgScaleFront = imageObjectFront.transform.localScale;
         imgScaleBack = imageObjectBack.transform.localScale;
+    }
+
+    void Update() {
+        if (selectScreen) {
+            // Debug to select the own screen from inspector
+            selectScreen = false;
+            Select();
+        }    
+    }
+
+    public void Select() {
+        // Tell the ShopExplorer that this article monitor has been selected
+        shopExplorer.SelectScreen(gameObject);
+
+        // Spawn the shop item
+        shopExplorer.SpawnShopItem(gameObject);
     }
 
     public Color GetMonitorColor() {
