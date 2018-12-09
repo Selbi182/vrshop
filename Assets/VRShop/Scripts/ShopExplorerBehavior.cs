@@ -215,9 +215,9 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
         // Move the selected monitor towards its destination
         if (expandedScreen != null) {
-            expandedScreen.transform.position = Vector3.Slerp(
-                expandedScreen.transform.position,
-                infoScreen.transform.position,
+            expandedScreen.transform.localPosition = Vector3.Slerp(
+                expandedScreen.transform.localPosition,
+                infoScreen.transform.localPosition,
                 Time.deltaTime * selectionSpeed
             );
 
@@ -309,7 +309,7 @@ public class ShopExplorerBehavior : MonoBehaviour {
 
     private void OrientateScreen(GameObject screen) {
         // Update the rotation to keep looking at the player.
-        screen.transform.rotation = Quaternion.LookRotation(transform.parent.position - screen.transform.position);
+        screen.transform.localRotation = Quaternion.LookRotation(transform.localPosition - screen.transform.localPosition);
         Vector3 tmpAngles = screen.transform.localEulerAngles;
         tmpAngles.x = 0;
         screen.transform.localEulerAngles = tmpAngles;

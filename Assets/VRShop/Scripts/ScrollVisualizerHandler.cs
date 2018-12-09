@@ -29,9 +29,9 @@ public class ScrollVisualizerHandler : MonoBehaviour {
             float translatedMarkerPosition = ((actualOffset / maximumOffset) * markerBoxScale) - (markerBoxScale / 2f);
 
             // Apply the new position
-            Vector3 newPos = positionMarker.transform.position;
+            Vector3 newPos = positionMarker.transform.localPosition;
             newPos.x = translatedMarkerPosition;
-            positionMarker.transform.position = newPos;
+            positionMarker.transform.localPosition = newPos;
 
             // Disable the buttons according to the position
             leftButton.tag = SCREEN_SELECTABLE;
@@ -46,9 +46,9 @@ public class ScrollVisualizerHandler : MonoBehaviour {
                 SetColor(rightButton, shopExplorer.colorInactive);
             }
         } else {
-            Vector3 newPos = positionMarker.transform.position;
+            Vector3 newPos = positionMarker.transform.localPosition;
             newPos.x = 0f;
-            positionMarker.transform.position = newPos;
+            positionMarker.transform.localPosition = newPos;
 
             leftButton.tag = SCREEN_NOTSELECTABLE;
             rightButton.tag = SCREEN_NOTSELECTABLE;

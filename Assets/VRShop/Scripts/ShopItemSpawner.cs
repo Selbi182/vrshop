@@ -41,7 +41,7 @@ public class ShopItemSpawner : MonoBehaviour {
             Transform t = g.transform;
             t.parent = spawnLocation.transform;
             t.localPosition = Vector3.zero;
-            t.rotation = Quaternion.identity;
+            t.localRotation = Quaternion.identity;
             t.name = string.Format("({0}) {1}", article.Id.ToString(), article.Name);
 
             // Scale the object
@@ -83,7 +83,7 @@ public class ShopItemSpawner : MonoBehaviour {
 
     void FixedUpdate() {
         if (spawnedObject != null) {
-            spawnLocation.transform.Rotate(new Vector3(0, noGravityRotationSpeed, 0));
+            spawnLocation.transform.Rotate(new Vector3(0, noGravityRotationSpeed, 0), Space.Self);
         }
     }
 
