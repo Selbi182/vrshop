@@ -1,10 +1,8 @@
-# VR-Shop
-A proof-of-concept virtual reality shopping experience developed with Unity. An HTC Vive is required.
+# VR-Shop mit eingescannten 3D-Modellen
+Ein virtuelles Einkaufserlebnis in Virtueller Realität, entickelt mit Unity und der HTC Vive.
 
-## Requirements: Allow Cortana to access apps
-The application uses Cortana's speech-to-text functionality from the HTC Vive's built-in microphone in order to search for the articles. This only works on a Windows 10 working machine and needs to be manually enabled first.
-
-**German privacy settings:**
+## Konfiguration: Cortana freischalten
+Die Applikation verwendet die Spracherkennung von Cortana zusammen mit dem eingebauten Mikrofon der HTC Vive, um nach Artikeln suchen zu können. Diese Optionen sind standardmäßig unter Windows 10 deaktiviert und müssen vorher freigeschaltet werden:
 
 * Windows 10 Einstellungen -> "Datenschutz (Position, Kamera)":
     * "Spracherkennung":
@@ -14,9 +12,8 @@ The application uses Cortana's speech-to-text functionality from the HTC Vive's 
         * "Zugriff auf das Mikrofon auf diesem Gerät zulassen" einschalten
         * "Zulassen, dass Apps auf ihr Mikrofon zugreifen" einschalten
 
-## Notes
-* There are only 26 unique articles in the shop!
-    * Search for **"alles"** ("everything") to enable debug mode, which mocks 100 search results to test the article wall's rotation.
-* Should the voice recognition still fail, you can always type in using the keyboard while the search menu is active.
-* Importing 3D models into the app for the first time is a very slow process that may hang the application for a few seconds.
-    * The model will be cached though, so subsequent imports of the same model will show up instantly.
+## Hinweise
+* Der Ordner **Articles** muss im Hauptverzeichnis der ausführbaren Datei liegen, NICHT VRShop_Data.
+* Es gibt nur 26 Artikel. Mit dem Suchwort **"alles"** wird der Debug Modus aktiviert, welcher zum Testen 100+ Artikelmonitore anzeigt um die Rotation der Artikelwand testen zu können.
+* Sollte die Spracherkennung nicht funktionieren, kann als Ersatzlösung mit der Tastatur gesucht werden.
+* Der Import von 3D-Modellen nimmt einige Sekunden in Anspruch und kann die Anwendung verlangsamen. Wiederholtes Importieren benutzt einen Cache, mit dem der Vorgang beschleunigt wird.
