@@ -1272,7 +1272,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1273863856660806}
   m_LocalRotation: {x: -0, y: 0.38268343, z: -0, w: 0.92387956}
-  m_LocalPosition: {x: 0, y: -10, z: 0}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_Children: []
   m_Father: {fileID: 4118734319709056}
@@ -2944,7 +2944,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 1
-  outlineColor: {r: 0.92156863, g: 0.35686275, b: 0.14509805, a: 0.5019608}
+  outlineColor: {r: 0, g: 1, b: 1, a: 0.5019608}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []
@@ -3133,6 +3133,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41dd599b7318b4c4882bcc9692277110, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  despawnParticles: {fileID: 1301799007364246, guid: 2e8747a69fd569e47b85d051da931c70,
+    type: 2}
 --- !u!114 &114699467975141490
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3343,7 +3345,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 1
-  outlineColor: {r: 0.92156863, g: 0.35686275, b: 0.14509805, a: 0.5019608}
+  outlineColor: {r: 0, g: 1, b: 1, a: 0.5019608}
   outlineWidth: 5
   precomputeOutline: 0
   bakeKeys: []

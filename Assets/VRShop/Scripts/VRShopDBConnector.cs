@@ -45,7 +45,7 @@ public static class VRShopDBConnector {
                         SELECT p.id FROM parents p
                 )
             ORDER BY
-                a.category DESC
+                s.scale DESC, a.category DESC
     ", ARTICLE_SEARCH_STRING_PLACEHOLDER);
 
     public static List<VRShopArticle> SearchForArticle(string searchString) {

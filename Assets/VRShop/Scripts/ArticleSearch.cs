@@ -131,11 +131,6 @@ public class ArticleSearch : MonoBehaviour {
         }
 
         List<VRShopArticle> searchResultArticles = VRShopDBConnector.SearchForArticle(search);
-        if (isDebug) {
-            // Debug: Duplicate the search results four times to test the rotating cylinder, as there aren't enough articles in the database
-            searchResultArticles.AddRange(searchResultArticles);
-            searchResultArticles.AddRange(searchResultArticles);
-        }
 
         OfferResults(searchResultArticles);
 
@@ -145,6 +140,9 @@ public class ArticleSearch : MonoBehaviour {
             resultText = string.Format("{0} Suchergebniss", resultsCount);
         }
         string formatted = string.Format("({0}) {1}", resultText, search);
+        if (isDebug) {
+            formatted = string.Format("({0}) <DEBUG MODE>", resultText);
+        }
 
         ResetSearch();
         UpdateMeshText(formatted);

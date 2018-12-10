@@ -69,7 +69,7 @@ public class LaserPointer : MonoBehaviour {
                         SendMessage("HapticPulseDo", 0.5f);
                     } else {
                         // Send the command that an article screen has been selected for preview
-                        gameObject.GetComponent<ArticleMonitorWrapper>().Select();
+                        targetObject.GetComponent<ArticleMonitorWrapper>().Select();
                         SendMessage("HapticPulseDoLerp", 1f / 30f);
                     }
                 }
